@@ -29,4 +29,4 @@ coverage.xml
 .idea/
 
 # Environment variables (add .env to this line)
-.env
+*.env
