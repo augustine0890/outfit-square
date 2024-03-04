@@ -1,6 +1,9 @@
+import os
+
 from utils import load_environment
 import sys
-import os
+# Import the OutfitSquareBot class
+from discord_client import OutfitSquareBot
 
 if __name__ == "__main__":
     stage_arg = "prod"  # Default stage
@@ -13,11 +16,21 @@ if __name__ == "__main__":
         except IndexError:
             print("Error: Please provide a value for --stage argument.")
             sys.exit(1)
-        load_environment(stage_arg)
+
+    # Load '.env' based on specified stage
+    load_environment(stage_arg)
     # else:
     #     # Default behavior (load prod.env)
     #     load_environment("prod")
-    dc_token = os.getenv("DISCORD_TOKEN")
-
     print(f"Using {stage_arg.upper()} environment")
-    print(f"DISCORD TOKEN: {dc_token}")
+
+    # Load the Discord token
+    discord_token = os.getenv("DISCORD_TOKEN")
+    if discord_token is None:
+        print("Error: DISCORD_TOKEN is not set.")
+        sys.exit(1)
+
+    # Initialize and run the Bot
+    bot = OutfitSquareBot(discord_token)
+    bot.run_bot()
+

@@ -1,6 +1,8 @@
 # Outfit Square
 Outfit Square is a Python project designed for managing outfits and fashion choices. It integrates with MongoDB and provides functionality for organizing and categorizing clothing items.
 
+**Add [Outfit_Square](https://discord.com/oauth2/authorize?client_id=1214115282684088331&permissions=8&scope=bot%20applications.commands) to your Server**
+
 ## Installation
 1. Make sure you have Python 3.11 installed.
 2. Install Poetry if you haven’t already.
