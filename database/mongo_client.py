@@ -11,6 +11,6 @@ class MongoDBInterface:
 
     def add_user(self, user: User):
         # Ensure that the _id is properly set as an integer
-        user_dict = user.dict(by_alias=True)
+        user_dict = user.dict(by_alias=True, exclude_none=True)
         result = self.user_collection.insert_one(user_dict)
         return result.inserted_id

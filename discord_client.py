@@ -3,19 +3,22 @@ from discord.ext import commands
 from database.mongo_client import MongoDBInterface
 from database.model import User
 
-
 class OutfitSquareBot(commands.Bot):
     def __init__(self, token, mongo_uri, mongo_dbname):
         intents = discord.Intents.default()
+        intents.members = True
+        intents.message_content = True  # Ensure this intent is enabled in your bot's application page
         super().__init__(command_prefix="!", intents=intents)
         self.token = token
         self.mongo = MongoDBInterface(mongo_uri, mongo_dbname)
 
+        # Properly register the attend command
+        self.attend_command = self.command(name='attend')(self.attend_command)
+
     async def on_ready(self):
         print(f'Logged in as {self.user}')
 
-    @commands.command(name='attend')
-    async def attend(self, ctx, member: discord.Member = None):
+    async def attend_command(self, ctx, member: discord.Member = None):
         print(ctx.author.name, ctx.author)
         # If no member is specified, use the command invoker
         if not member:
@@ -34,5 +37,3 @@ class OutfitSquareBot(commands.Bot):
 
     def run_bot(self):
         self.run(self.token)
-
-
