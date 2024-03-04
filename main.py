@@ -29,8 +29,12 @@ if __name__ == "__main__":
     if discord_token is None:
         print("Error: DISCORD_TOKEN is not set.")
         sys.exit(1)
-
+    # Load the MongoDB uri
+    mongo_uri = os.getenv("MONGO_URI")
+    if mongo_uri is None:
+        print("Error: MONGO_URI is not set.")
+        sys.exit(1)
     # Initialize and run the Bot
-    bot = OutfitSquareBot(discord_token)
+    bot = OutfitSquareBot(discord_token, mongo_uri, "outfit-square")
     bot.run_bot()
 
