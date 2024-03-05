@@ -59,8 +59,9 @@ class Activity(BaseModel):
         default=None,
         description="The unique identifier for the activities",
     )
+    dcId: int = Field(..., description="The Discord user's id")
     dcUsername: str = Field(..., description="The Discord user's username")
-    channelId: int = Field(..., description="The Discord channel's id")
+    channelId: int = Field(default=None, description="The Discord channel's id")
     activity: ActivityType = Field(
         ..., description="The actual activity of react, receive, attend"
     )

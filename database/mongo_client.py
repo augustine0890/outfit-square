@@ -20,3 +20,15 @@ class MongoDBInterface:
         activity_dict = activity.dict(by_alias=True, exclude_none=True)
         result = self.activity_collection.insert_one(activity_dict)
         return result.inserted_id
+
+    def get_user_points(self, user_id: int) -> int:
+        # Create a filter to find the user by id
+        filter_id = {"_id": user_id}
+        # Specify the fields to return (only "points")
+        projection = {"points": 1}
+        result = self.user_collection.find(filter_id, projection)
+        # If a user is found, return their points. Otherwise, return 0
+        if result:
+            return result.get("points", 0)
+        else:
+            return 0
