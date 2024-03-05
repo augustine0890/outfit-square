@@ -13,9 +13,11 @@ cd outfit-square
 ```
 4. Install dependencies using Poetry: `poetry install`
 5. Notes:
-- Add new packages to the project: `peotry add package-name`
+- Add new packages to the project: `peotry add <package-name>`
+  - Remove a package: `peotry remove <package-name>`
+  - Add the package as a development dependency: `peotry add --group dev <package-name>`
 - If you need to specify platform-specific dependencies (e.g., different packages for Linux and MacOS):
-  - `poetry package-name --platform linux`
+  - `poetry <package-name> --platform linux`
 
 ## Usage
 1. Create a virtual environment (if not using Poetry): `python -m venv venv source venv/bin/activate  # On Windows: venv\Scripts\activate`

@@ -9,10 +9,13 @@ readme = "README.md"
 python = "^3.11"
 py-cord = "^2.5.0"
 python-dotenv = "^1.0.1"
-autopep8 = "^2.0.4"
 pymongo = {version = "3.11", extras = ["srv"]}
 pydantic = "^2.6.3"
 
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.2.0"
+autopep8 = "^2.0.4"
 
 [build-system]
 requires = ["poetry-core"]

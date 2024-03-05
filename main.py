@@ -2,6 +2,7 @@ import os
 
 from utils import load_environment
 import sys
+
 # Import the OutfitSquareBot class
 from discord_client import OutfitSquareBot
 
@@ -37,4 +38,3 @@ if __name__ == "__main__":
     # Initialize and run the Bot
     bot = OutfitSquareBot(discord_token, mongo_uri, "outfit-square")
     bot.run_bot()
-
