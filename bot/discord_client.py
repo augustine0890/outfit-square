@@ -2,9 +2,11 @@ import discord
 from discord.ext import commands
 from database.mongo_client import MongoDBInterface
 from database.model import User, Activity, ActivityType
+from datetime import datetime, timezone
 
 attendance_channel: int = 1021958640829210674  # 1207877436163760198 (outfit-square)
-announcement_channel: int = 1209051632655142922  # 1207618904017604668(outfit-square)
+announcement_channel: int = 1209051632655142922  # 1207618904017604668 (outfit-square)
+guild_id: int = 1019782712799805440  # 1202064555753353276 (outfit-square)
 
 
 class OutfitSquareBot(commands.Bot):
@@ -46,14 +48,15 @@ class OutfitSquareBot(commands.Bot):
             return
 
         try:
-            activity_data = {
-                "dcUsername": user.name,
-                "channelId": reaction.message.channel.id,
-                "messageId": reaction.message.id,
-                "activity": ActivityType.react,
-                "reward": react_points,
-                "emoji": str(reaction.emoji),
-            }
+            activity_data = dict(
+                dcUsername=user.name,
+                dcId=user.id,
+                channelId=reaction.message.channel.id,
+                messageId=reaction.message.id,
+                activity=ActivityType.react,
+                reward=react_points,
+                emoji=str(reaction.emoji),
+            )
             activity = Activity(**activity_data)
             self.mongo.add_activity(activity)
         except Exception as e:
@@ -63,18 +66,63 @@ class OutfitSquareBot(commands.Bot):
         )
 
     async def attend(self, ctx, member: discord.Member = None):
+        # Check if the command is used in the specific channel
+        if guild_id != ctx.guild.id:
+            return
+        # Check if the command is used in the specific channel
+        if ctx.channel.id != attendance_channel:
+            await ctx.message.reply(
+                f"<@{ctx.author.id}> Please go to the <#{attendance_channel}> channel for Daily Attendance and Points "
+                f"Checking."
+            )
+            return
+        # Check if the author is bot
+        if ctx.author.bot:
+            return
         if not member:
             member = ctx.author
+        # Get today's date at midnight in UTC
+        today = datetime.utcnow().date()
+        # Convert the date object to a datetime object at midnight
+        today_datetime = datetime(
+            today.year, today.month, today.day, tzinfo=timezone.utc
+        )
+        print("today", today)
+        count_attendance = self.mongo.activity_collection.count_documents(
+            {
+                "dcId": member.id,
+                "activity": ActivityType.attend,
+                "createdAt": {"$gte": today_datetime},
+            }
+        )
+        print(count_attendance, "counting")
+        if count_attendance > 0:
+            await ctx.message.reply(
+                f"<@{member.id}> has already got the daily attendance points today."
+            )
+            return
+
+        # Create an activity
+        try:
+            activity_data = dict(
+                dcId=member.id,
+                dcUsername=member.name,
+                activity=ActivityType.attend,
+                reward=50,
+            )
+            activity = Activity(**activity_data)
+            self.mongo.add_activity(activity)
+        except Exception as e:
+            print(f"Error while adding the attend activity: {e}")
 
         try:
-            user_data = {
-                "id": member.id,
-                "userName": member.display_name,
-                "points": 50,
-            }
+            user_data = dict(id=member.id, userName=member.display_name, points=50)
             user = User(**user_data)  # Assuming User class is defined
-            self.mongo.add_user(user)
-            await ctx.send(f"{member.display_name} has been marked as attended.")
+            # self.mongo.add_user(user)
+            await ctx.reply(
+                f"Congratulations <@{member.id}>! You've got 50 points for daily attendance 🎉 See "
+                f"you tomorrow! 👋🏻"
+            )
         except Exception as e:
             print(f"Error adding user to database: {e}")
             await ctx.send("An error occurred while marking attendance.")
