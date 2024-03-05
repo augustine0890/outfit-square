@@ -24,7 +24,7 @@ cd outfit-square
 2. Run the application: `python main.py` --> It will default to loading the `prod.env`
    - Run your script with desired stage: `python main.py --stage dev`
 3. Notes:
-- Remember to replace `DISCORD_TOKEN`, and `MONGODB` with the actual environment variable names in `.env` files.
+- Remember to replace `DISCORD_TOKEN`, and `MONGO_URI` with the actual environment variable names in `.env` files.
 
 ## Contributing
 Contributions are welcome! If you find any issues or have suggestions, feel free to open an issue or submit a pull request.

@@ -4,7 +4,7 @@ from utils import load_environment
 import sys
 
 # Import the OutfitSquareBot class
-from discord_client import OutfitSquareBot
+from bot.discord_client import OutfitSquareBot
 
 if __name__ == "__main__":
     stage_arg = "prod"  # Default stage
