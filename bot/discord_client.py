@@ -24,7 +24,8 @@ class OutfitSquareBot(commands.Bot):
         self.mongo = MongoDBInterface(mongo_uri, mongo_dbname)
 
         # Register the commands explicitly
-        self.command(name="attend")(self.attend)
+        self.command(name="attend")(self.attend_command)
+        self.command(name="check-points", aliases=["cp"])(self.check_points_command)
 
     async def on_ready(self):
         print(f"Logged in as {self.user}")
@@ -68,7 +69,26 @@ class OutfitSquareBot(commands.Bot):
             f"Reaction: {reaction.emoji} by {user.name}"
         )
 
-    async def attend(self, ctx, member: discord.Member = None):
+    async def check_points_command(self, ctx, member: discord.Member = None):
+        # Check if the command is used in the specific channel
+        if guild_id != ctx.guild.id:
+            return
+        if attendance_channel != ctx.channel.id:
+            await ctx.message.reply(
+                f"<@{ctx.author.id}> Please go to the <#{attendance_channel}> channel for Daily Attendance and Points "
+                f"Checking."
+            )
+            return
+        if not member:
+            member = ctx.author
+        # Check the user's current points
+        user_points: dict = self.mongo.get_user_points(member.id)
+        points_embed = await embed_points_message(member, user_points)
+        # Send the embed in the channel
+        await ctx.send(embed=points_embed)
+        return
+
+    async def attend_command(self, ctx, member: discord.Member = None):
         # Check if the command is used in the specific channel
         if guild_id != ctx.guild.id:
             return
