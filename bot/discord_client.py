@@ -132,7 +132,7 @@ class OutfitSquareBot(commands.Bot):
         try:
             user_data = dict(id=member.id, userName=member.display_name, points=50)
             user = User(**user_data)  # Assuming User class is defined
-            # self.mongo.add_user(user)
+            self.mongo.add_or_update_user_points(user)
             await ctx.reply(
                 f"Congratulations <@{member.id}>! You've got 50 points for daily attendance 🎉 See "
                 f"you tomorrow! 👋🏻"
