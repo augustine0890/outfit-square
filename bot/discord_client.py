@@ -3,6 +3,8 @@ from discord.ext import commands
 from database.mongo_client import MongoDBInterface
 from database.model import User, Activity, ActivityType
 from datetime import datetime, timezone
+from .embed import embed_points_message
+
 
 attendance_channel: int = 1021958640829210674  # 1207877436163760198 (outfit-square)
 announcement_channel: int = 1209051632655142922  # 1207618904017604668 (outfit-square)
@@ -82,6 +84,10 @@ class OutfitSquareBot(commands.Bot):
             return
         if not member:
             member = ctx.author
+        # Check the user's current points
+        user_points: dict = self.mongo.get_user_points(member.id)
+        points_embed = await embed_points_message(member, user_points)
+
         # Get today's date at midnight in UTC
         today = datetime.utcnow().date()
         # Convert the date object to a datetime object at midnight
@@ -99,14 +105,15 @@ class OutfitSquareBot(commands.Bot):
             await ctx.message.reply(
                 f"<@{member.id}> has already got the daily attendance points today."
             )
+            # Send the embed in the channel
+            await ctx.send(embed=points_embed)
             return
 
-        # Check the user's current points
-        points = self.mongo.get_user_points(member.id)
-        if points + 50 > max_points:
+        if user_points.get("points") + 50 > max_points:
             await ctx.send(
                 f"<@{member.id}> You may have reached the maximum limit of 200,000 points."
             )
+            await ctx.send(embed=points_embed)
             return
 
         # Create an activity
