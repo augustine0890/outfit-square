@@ -10,7 +10,7 @@ from typing_extensions import Annotated
 class User(BaseModel):
     id: int = Field(..., alias="_id", description="The unique identifier for the user")
     userName: str = Field(..., description="The user's name")
-    points: int = Field(0, description="The user's points")
+    points: int = Field(..., description="The user's points")
     joinedDate: Optional[datetime] = Field(None, description="The date the user joined")
     createdAt: datetime = Field(
         default_factory=datetime.utcnow,

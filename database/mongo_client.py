@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 from .model import User, Activity
-import datetime
+from datetime import datetime
 
 
 class MongoDBInterface:
@@ -10,11 +10,26 @@ class MongoDBInterface:
         self.user_collection = self.db["user"]
         self.activity_collection = self.db["activity"]
 
-    def add_user(self, user: User):
-        # Ensure that the _id is properly set as an integer
-        user_dict = user.dict(by_alias=True, exclude_none=True)
-        result = self.user_collection.insert_one(user_dict)
-        return result.inserted_id
+    def add_or_update_user_points(self, user: User):
+        # Create a filter to find the user by id
+        filter_id = {"_id": user.id}
+        # Prepare the update document
+        update_doc = {
+            # Ensure that the _id is properly set as an integer
+            "$setOnInsert": {
+                "_id": user.id,
+                "userName": user.userName,
+                "createdAt": user.createdAt,
+            },
+            "$inc": {"points": user.points},
+            "$set": {"updatedAt": datetime.utcnow()},
+        }
+
+        # Perform the database operation
+        result = self.user_collection.update_one(filter_id, update_doc, upsert=True)
+
+        # If a new document was inserted, return its id. Otherwise, return None.
+        return result.upserted_id
 
     def add_activity(self, activity: Activity):
         activity_dict = activity.dict(by_alias=True, exclude_none=True)
