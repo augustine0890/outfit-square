@@ -28,8 +28,10 @@ class OutfitSquareBot(commands.Bot):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
+        db_client = self.mongo
         # Use the handle_reaction function
-        await handle_reaction(reaction, user)
+        # Pass 'self' for the bot argument, since 'self' represents an instance of OutfitSquareBot
+        await handle_reaction(self, db_client, reaction, user)
 
     async def check_points_command(self, ctx, member: discord.Member = None):
         # Check if the command is used in the specific server
