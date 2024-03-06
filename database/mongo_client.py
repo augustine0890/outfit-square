@@ -26,7 +26,7 @@ class MongoDBInterface:
         filter_id = {"_id": user_id}
         # Specify the fields to return (only "points")
         projection = {"points": 1}
-        result = self.user_collection.find(filter_id, projection)
+        result = self.user_collection.find_one(filter_id, projection)
         # If a user is found, return their points. Otherwise, return 0
         if result:
             return result.get("points", 0)

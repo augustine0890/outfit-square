@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 attendance_channel: int = 1021958640829210674  # 1207877436163760198 (outfit-square)
 announcement_channel: int = 1209051632655142922  # 1207618904017604668 (outfit-square)
 guild_id: int = 1019782712799805440  # 1202064555753353276 (outfit-square)
+max_points = 200000
 
 
 class OutfitSquareBot(commands.Bot):
@@ -70,7 +71,7 @@ class OutfitSquareBot(commands.Bot):
         if guild_id != ctx.guild.id:
             return
         # Check if the command is used in the specific channel
-        if ctx.channel.id != attendance_channel:
+        if attendance_channel != ctx.channel.id:
             await ctx.message.reply(
                 f"<@{ctx.author.id}> Please go to the <#{attendance_channel}> channel for Daily Attendance and Points "
                 f"Checking."
@@ -87,7 +88,6 @@ class OutfitSquareBot(commands.Bot):
         today_datetime = datetime(
             today.year, today.month, today.day, tzinfo=timezone.utc
         )
-        print("today", today)
         count_attendance = self.mongo.activity_collection.count_documents(
             {
                 "dcId": member.id,
@@ -95,10 +95,17 @@ class OutfitSquareBot(commands.Bot):
                 "createdAt": {"$gte": today_datetime},
             }
         )
-        print(count_attendance, "counting")
         if count_attendance > 0:
             await ctx.message.reply(
                 f"<@{member.id}> has already got the daily attendance points today."
+            )
+            return
+
+        # Check the user's current points
+        points = self.mongo.get_user_points(member.id)
+        if points + 50 > max_points:
+            await ctx.send(
+                f"<@{member.id}> You may have reached the maximum limit of 200,000 points."
             )
             return
 
