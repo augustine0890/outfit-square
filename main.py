@@ -1,6 +1,6 @@
 import os
 
-from utils import load_environment
+from util.config import load_environment
 import sys
 
 # Import the OutfitSquareBot class
