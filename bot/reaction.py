@@ -55,6 +55,9 @@ async def handle_reaction(
     ):
         return
 
+    # Fetch the channel object using its ID
+    channel = bot.get_channel(attendance_channel)
+
     emoji = str(reaction.emoji)  # Convert the emoji to string for comparison
     # Deduct points for a bad emoji reaction and send a notification
     if emoji in bad_emojis:
@@ -70,9 +73,6 @@ async def handle_reaction(
                 f"<@{user.id}> got 10 points deducted for reacting {emoji} in the <#{message.channel.id}> "
                 f"channel."
             )
-            # Fetch the channel object using its ID
-            channel = bot.get_channel(attendance_channel)
-
             # Ensure the channel was found
             if channel:
                 # Send the message to the channel
@@ -81,6 +81,7 @@ async def handle_reaction(
                 print(f"Could not find the channel with ID: {attendance_channel}")
         except Exception as e:
             print(f"Error while adjusting the user's points: {e}")
+        return
 
     try:
         activity_data = dict(
@@ -93,7 +94,7 @@ async def handle_reaction(
             emoji=str(reaction.emoji),
         )
         activity = Activity(**activity_data)
-        # self.mongo.add_activity(activity)
+        self.mongo.add_activity(activity)
     except Exception as e:
         print(f"Error while adding the activity: {e}")
     await message.channel.send(f"Reaction: {reaction.emoji} by {user.name}")
