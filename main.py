@@ -1,13 +1,14 @@
 import os
 
-from util.config import load_environment
+from util.config import Config
 import sys
 
 # Import the OutfitSquareBot class
 from bot.discord_client import OutfitSquareBot
 
 if __name__ == "__main__":
-    stage_arg = "prod"  # Default stage
+    # Default to production environment if no argument is provided
+    stage_arg = "prod"
     # Load environment based on command-line argument
     # Check if the "--stage" argument is provided
     if "--stage" in sys.argv:
@@ -19,10 +20,10 @@ if __name__ == "__main__":
             sys.exit(1)
 
     # Load '.env' based on specified stage
-    load_environment(stage_arg)
+    Config.load_env(stage_arg)
     # else:
     #     # Default behavior (load prod.env)
-    #     load_environment("prod")
+    #     load_env("prod")
     print(f"Using {stage_arg.upper()} environment")
 
     # Load the Discord token
@@ -35,6 +36,7 @@ if __name__ == "__main__":
     if mongo_uri is None:
         print("Error: MONGO_URI is not set.")
         sys.exit(1)
+
     # Initialize and run the Bot
     bot = OutfitSquareBot(discord_token, mongo_uri, "outfit-square")
     bot.run_bot()

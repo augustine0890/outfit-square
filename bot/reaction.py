@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
 
-from database.model import User
-from util.config import guild_id, attendance_channel
+from database.model import User, Activity, ActivityType
+from util.config import Config
 from database.mongo_client import MongoDBInterface
 
 
@@ -12,10 +12,13 @@ async def handle_reaction(
     reaction: discord.Reaction,
     user: discord.User,
 ):
-    deduct_points: int = -10  # The points to deduct for a bad emoji reaction
-    react_points: int = 3
-    receive_points: int = 10
-    bad_emojis = [
+    """Handles reactions on messages according to predefined rules."""
+    deduct_points = -10  # Points to deduct for a negative reaction
+    react_points = 3  # Points to award for reacting
+    receive_points = 10  # Points to award for receiving a reaction
+
+    # Define bad emojis
+    bad_emojis = {
         "😠",
         "😤",
         "🤮",
@@ -33,68 +36,62 @@ async def handle_reaction(
         "🖕",
         "🖕🏽",
         "👎",
-    ]
+    }
 
-    # Fetch the message
     message = reaction.message
 
-    # Check if the command is used in the specific server
-    if message.guild.id != guild_id:
+    if message.guild.id != Config.GUILD_ID:
         return
+
     await reaction.message.channel.send(f"Reaction: {reaction.emoji} by {user.name}")
 
-    # Fetch the author of the message
     author = message.author
-    # If the reaction is from a bot, to a bot's message, from the author themselves, or in the attendance
-    # channel, ignore it.
-    if (
-        attendance_channel == message.channel.id
-        or author.bot
-        or user.bot
-        # or author == user
-    ):
+
+    # Ignore reactions in certain conditions
+    if message.channel.id == Config.ATTENDANCE_CHANNEL_ID or author.bot or user.bot:
         return
 
-    # Fetch the channel object using its ID
-    channel = bot.get_channel(attendance_channel)
+    channel = bot.get_channel(Config.ATTENDANCE_CHANNEL_ID)
 
-    emoji = str(reaction.emoji)  # Convert the emoji to string for comparison
-    # Deduct points for a bad emoji reaction and send a notification
+    emoji = str(reaction.emoji)
     if emoji in bad_emojis:
         try:
-            # Prepare the user data for updating points
-            user_data = dict(
-                id=user.id, userName=user.display_name, points=deduct_points
-            )
-            user = User(**user_data)
-            db_client.add_or_update_user_points(user)
-            # Formulate the message content
+            user_data = {
+                "id": user.id,
+                "userName": user.display_name,
+                "points": deduct_points,
+            }
+            user_model = User(**user_data)
+            db_client.add_or_update_user_points(user_model)
+
             content = (
-                f"<@{user.id}> got 10 points deducted for reacting {emoji} in the <#{message.channel.id}> "
-                f"channel."
+                f"<@{user.id}> got 10 points deducted for reacting {emoji} in "
+                f"the <#{message.channel.id}> channel."
             )
-            # Ensure the channel was found
             if channel:
-                # Send the message to the channel
                 await channel.send(content)
             else:
-                print(f"Could not find the channel with ID: {attendance_channel}")
+                print(
+                    f"Could not find the channel with ID: {Config.ATTENDANCE_CHANNEL_ID}"
+                )
         except Exception as e:
-            print(f"Error while adjusting the user's points: {e}")
+            print(f"Error adjusting points: {e}")
         return
 
+    # Handle adding activity for positive reactions
     try:
-        activity_data = dict(
-            dcUsername=user.name,
-            dcId=user.id,
-            channelId=message.channel.id,
-            messageId=message.id,
-            activity=ActivityType.react,
-            reward=react_points,
-            emoji=str(reaction.emoji),
-        )
+        activity_data = {
+            "dcUsername": user.name,
+            "dcId": user.id,
+            "channelId": message.channel.id,
+            "messageId": message.id,
+            "activity": ActivityType.REACT,
+            "reward": react_points,
+            "emoji": emoji,
+        }
         activity = Activity(**activity_data)
-        self.mongo.add_activity(activity)
+        db_client.add_activity(activity)
     except Exception as e:
-        print(f"Error while adding the activity: {e}")
+        print(f"Error adding activity: {e}")
+
     await message.channel.send(f"Reaction: {reaction.emoji} by {user.name}")

@@ -40,12 +40,12 @@ class User(BaseModel):
 
 
 class ActivityType(str, Enum):
-    attend = "attend"
-    react = "react"
-    receive = "receive"
-    awaken = "awaken"
-    poll = "poll"
-    lotto = "lotto"
+    ATTEND = "attend"
+    REACT = "react"
+    RECEIVE = "receive"
+    AWAKEN = "awaken"
+    POLL = "poll"
+    LOTTO = "lotto"
 
 
 # Represents an ObjectId field in the database.
