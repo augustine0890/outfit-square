@@ -1,20 +1,19 @@
 #!/bin/bash
 
-# Optional: Activate virtual environment if needed and if Poetry has been used to create it
-# source $HOME/.poetry/env
-
-# Note: Assumes the Python project is configured to use Poetry
-
-# Optional: Set any environment variables your Python application requires
-# export VARIABLE_NAME=value
-
+# Attempt to set the Python version to 3.11 for the project
 # Ensure the specified Python version is used for the project
-# Adjust 'python3.11' to the path of the desired Python executable if necessary
-poetry env use python3.11
+PYTHON_PATH="/usr/bin/python3.11"
 
-# Check if the correct Python version is now set
+# Remove the existing virtual environment to reset any issues
+poetry env remove python3.11
+
+# Re-use the Python version for the project
+poetry env use $PYTHON_PATH || poetry env use python3.11
+
+# Verify Python version is set correctly
+poetry run python --version 2>&1 | grep -q "Python 3.11"
 if [ $? -ne 0 ]; then
-    echo "Failed to set Python version to 3.11. Please ensure Python 3.11 is installed."
+    echo "Failed to use Python 3.11. Please ensure Python 3.11 is installed and accessible to Poetry."
     exit 1
 fi
 
@@ -27,28 +26,28 @@ if [ -f outfit-square.pid ]; then
     if kill -0 $OLD_PID > /dev/null 2>&1; then
         echo "Stopping running application..."
         kill $OLD_PID
-        # wait for the old process to stop
-        while kill -0 $OLD_PID > /dev/null 2>&1; do
-            sleep 1
-        done
+        while kill -0 $OLD_PID > /dev/null 2>&1; do sleep 1; done
     fi
 fi
 
 # Remove old log and pid files
 rm -f outfit-square.log outfit-square.pid
 
-# Attempt to start the application regardless of the previous steps' success
+# Start the application
 echo "Starting outfit-square application..."
+# Use 'exec -a' to name the process. Note: This might not be effective in all systems.
+exec -a outfit-square poetry run python main.py > outfit-square.log 2>&1 & echo $! > outfit-square.pid
 
-# Start your Python application in the background, redirect output to a log file,
-# and store its PID in a separate file. Attempt to start even if there were issues.
-poetry run python main.py > outfit-square.log 2>&1 & echo $! > outfit-square.pid
+sleep 5 # Give some time for the application to start or fail
 
-if [ -f outfit-square.pid ]; then
-    if [ -s outfit-square.pid ]; then
-        echo "outfit-square application has been started."
+# Check if the application started successfully
+if [ -s outfit-square.pid ]; then
+    PID=$(cat outfit-square.pid)
+    if ps -p $PID > /dev/null; then
+        echo "outfit-square application has been started, PID $PID."
     else
-        echo "Failed to start the outfit-square application. PID file is empty."
+        echo "Application PID exists but process is not running."
+        rm -f outfit-square.pid # Clean up PID file as process did not start
     fi
 else
     echo "Failed to start the outfit-square application. No PID file was created."
