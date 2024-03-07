@@ -50,7 +50,7 @@ async def handle_reaction(
         message.channel.id == Config.ATTENDANCE_CHANNEL_ID
         or author.bot
         or user.bot
-        # or author == user
+        or author == user
     ):
         return
 
