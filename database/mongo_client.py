@@ -1,6 +1,6 @@
 from pymongo import MongoClient
-from .model import User, Activity
-from datetime import datetime
+from .model import User, Activity, ActivityType
+from datetime import datetime, timezone
 
 
 class MongoDBInterface:
@@ -35,6 +35,29 @@ class MongoDBInterface:
         activity_dict = activity.dict(by_alias=True, exclude_none=True)
         result = self.activity_collection.insert_one(activity_dict)
         return result.inserted_id
+
+    def add_reaction_activity(self, activity: Activity) -> bool:
+        activity_dict = activity.dict(by_alias=True, exclude_none=True)
+        # Use datetime.now(timezone.utc) to get the current UTC time directly
+        today = datetime.utcnow().replace(
+            tzinfo=timezone.utc, hour=0, minute=0, second=0, microsecond=0
+        )
+        # MongoDB query to count the documents
+        count_reaction = self.activity_collection.count_documents(
+            {
+                "dcId": activity_dict["dcId"],
+                "activity": activity.activity,
+                "createdAt": {"$gte": today},
+            }
+        )
+
+        # Logic to check activity type and react accordingly
+        if (activity.activity == ActivityType.REACT and count_reaction > 4) or (
+            activity.activity == ActivityType.RECEIVE and count_reaction > 9
+        ):
+            return False
+        self.activity_collection.insert_one(activity_dict)
+        return True
 
     def get_user_points(self, user_id: int) -> dict:
         # Create a filter to find the user by id
