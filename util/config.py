@@ -1,13 +1,24 @@
 from dotenv import load_dotenv
 
-attendance_channel: int = 1021958640829210674  # 1207877436163760198 (outfit-square)
-announcement_channel: int = 1209051632655142922  # 1207618904017604668 (outfit-square)
-guild_id: int = 1019782712799805440  # 1202064555753353276 (outfit-square)
-max_points = 200000
 
+class Config:
+    # Default values for production; can be overridden by load_env
+    MAX_POINTS = 200000
+    ATTENDANCE_CHANNEL_ID = 1207877436163760198
+    ANNOUNCEMENT_CHANNEL_ID = 1207618904017604668
+    GUILD_ID = 1202064555753353276
 
-def load_environment(stage):
-    if stage == "dev":
-        load_dotenv("./dev.env")
-    else:
-        load_dotenv("./prod.env")
+    @classmethod
+    def load_env(cls, stage: str):
+        """Load environment variables based on the specified stage."""
+        if stage == "dev":
+            cls.ATTENDANCE_CHANNEL_ID = 1021958640829210674
+            cls.ANNOUNCEMENT_CHANNEL_ID = 1209051632655142922
+            cls.GUILD_ID = 1019782712799805440
+            load_dotenv("./dev.env")
+        else:  # Default to production environment
+            load_dotenv("./prod.env")
+
+        # After loading the .env file, you might want to set MAX_POINTS (and others if necessary) dynamically from
+        # the .env as well
+        # cls.MAX_POINTS = int(os.getenv("MAX_POINTS", cls.MAX_POINTS))
