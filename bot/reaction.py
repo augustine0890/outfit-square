@@ -54,6 +54,7 @@ async def handle_reaction(
     ):
         return
 
+    # Fetch the designated channel for posting messages about reactions.
     channel = bot.get_channel(Config.ATTENDANCE_CHANNEL_ID)
 
     emoji = str(reaction.emoji)
@@ -81,18 +82,17 @@ async def handle_reaction(
             print(f"Error adjusting points: {e}")
         return
 
-    # Handle adding activity for positive reactions
+    # Handle positive reactions for the user who reacted.
     try:
-        activity_data = {
+        user_activity_data = {
             "dcUsername": user.name,
             "dcId": user.id,
-            "channelId": message.channel.id,
             "messageId": message.id,
             "activity": ActivityType.REACT,
             "reward": react_points,
             "emoji": emoji,
         }
-        activity = Activity(**activity_data)
+        activity = Activity(**user_activity_data)
         result: bool = db_client.add_reaction_activity(activity)
         if result:
             user_data = {
@@ -101,12 +101,42 @@ async def handle_reaction(
                 "points": react_points,
             }
             user = User(**user_data)
+            # Update the user model with new points.
             db_client.add_or_update_user_points(user)
             content = f"<@{user.id}> got 3 points from reacting {emoji} on (https://discord.com/channels/{Config.GUILD_ID}/{message.channel.id}/{message.id}) in the <#{message.channel.id}> channel."
             await channel.send(content)
     except Exception as e:
-        print(f"Error adding activity: {e}")
+        print(f"Error adding user's activity: {e}")
 
     # If the message is from the announcement channel, return early (no points are granted for author)
     if message.channel.id == Config.ANNOUNCEMENT_CHANNEL_ID:
         return
+
+    # Handle positive reactions for the author of the message.
+    try:
+        author_activity_data = {
+            "dcUsername": author.name,
+            "dcId": author.id,
+            "messageId": message.id,
+            "activity": ActivityType.RECEIVE,
+            "reward": receive_points,
+            "emoji": emoji,
+        }
+        activity = Activity(**author_activity_data)
+        result: bool = db_client.add_reaction_activity(activity)
+        if result:
+            user_data = {
+                "id": author.id,
+                "userName": author.display_name,
+                "points": receive_points,
+            }
+            user = User(**user_data)
+            db_client.add_or_update_user_points(user)
+            content = (
+                f"<@{author.id}> got 10 points from <@{user.id}>'s reaction {emoji} on (https://discord.com"
+                f"/channels/{Config.GUILD_ID}/{message.channel.id}/{message.id}"
+                f") in the <#{message.channel.id}> channel."
+            )
+            await channel.send(content)
+    except Exception as e:
+        print(f"Error adding author's activity: {e}")
