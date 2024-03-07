@@ -26,6 +26,15 @@ cd outfit-square
 2. Run the application: `python main.py` --> It will default to loading the `prod.env`
    - Run your script with desired stage: `python main.py --stage dev`
 3. Notes:
+- Run the Application as production:
+  - Execute permissions: `chmod +x start_app.sh`
+  - Run the application as background: `./start_app.sh`
+  - Check the application is running: `ps -p $(cat outfit-square.pid)`
+    - Display live view of process's resource usage
+      - `top -p $(cat outfit-square.pid)`
+    - Display the CPU and memory usage:
+      - `ps -p $(cat outfit-square.pid) -o %cpu,%mem,cmd`
+      - If the %CPU is over 100% that are running on multiple cores.
 - Remember to replace `DISCORD_TOKEN`, and `MONGO_URI` with the actual environment variable names in `.env` files.
 
 ## Contributing
