@@ -106,3 +106,7 @@ async def handle_reaction(
             await channel.send(content)
     except Exception as e:
         print(f"Error adding activity: {e}")
+
+    # If the message is from the announcement channel, return early (no points are granted for author)
+    if message.channel.id == Config.ANNOUNCEMENT_CHANNEL_ID:
+        return
