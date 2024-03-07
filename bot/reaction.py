@@ -43,12 +43,15 @@ async def handle_reaction(
     if message.guild.id != Config.GUILD_ID:
         return
 
-    await reaction.message.channel.send(f"Reaction: {reaction.emoji} by {user.name}")
-
     author = message.author
 
     # Ignore reactions in certain conditions
-    if message.channel.id == Config.ATTENDANCE_CHANNEL_ID or author.bot or user.bot:
+    if (
+        message.channel.id == Config.ATTENDANCE_CHANNEL_ID
+        or author.bot
+        or user.bot
+        # or author == user
+    ):
         return
 
     channel = bot.get_channel(Config.ATTENDANCE_CHANNEL_ID)
@@ -90,8 +93,16 @@ async def handle_reaction(
             "emoji": emoji,
         }
         activity = Activity(**activity_data)
-        db_client.add_activity(activity)
+        result: bool = db_client.add_reaction_activity(activity)
+        if result:
+            user_data = {
+                "id": user.id,
+                "userName": user.display_name,
+                "points": react_points,
+            }
+            user = User(**user_data)
+            db_client.add_or_update_user_points(user)
+            content = f"<@{user.id}> got 3 points from reacting {emoji} on (https://discord.com/channels/{Config.GUILD_ID}/{message.channel.id}/{message.id}) in the <#{message.channel.id}> channel."
+            await channel.send(content)
     except Exception as e:
         print(f"Error adding activity: {e}")
-
-    await message.channel.send(f"Reaction: {reaction.emoji} by {user.name}")
