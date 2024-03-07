@@ -43,7 +43,6 @@ class ActivityType(str, Enum):
     ATTEND = "attend"
     REACT = "react"
     RECEIVE = "receive"
-    AWAKEN = "awaken"
     POLL = "poll"
     LOTTO = "lotto"
 
@@ -61,9 +60,9 @@ class Activity(BaseModel):
     )
     dcId: int = Field(..., description="The Discord user's id")
     dcUsername: str = Field(..., description="The Discord user's username")
-    channelId: int = Field(default=None, description="The Discord channel's id")
+    messageId: int = Field(default=None, description="The Discord message's id")
     activity: ActivityType = Field(
-        ..., description="The actual activity of react, receive, attend"
+        ..., description="The actual activity of react, receive, attend, poll, lotto"
     )
     reward: int = Field(..., description="The given points reacted to")
     emoji: str = Field(None, description="The emoji used to react to")
@@ -83,7 +82,7 @@ class Activity(BaseModel):
             "example": {
                 "id": "659b899d3c9b09b1579fa07a",
                 "dcUsername": "augustine",
-                "channelId": "1095522779165638716",
+                "messageId": "1095522779165638716",
                 "activity": "react",
                 "reward": 5,
                 "emoji": "🫵🏻",
