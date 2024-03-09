@@ -3,7 +3,7 @@ from discord.ext import commands
 from database.mongo_client import MongoDBInterface
 from database.model import User, Activity, ActivityType
 from datetime import datetime, timezone
-from .embed import embed_points_message
+from .embed import embed_points_message, embed_rank_message
 from .reaction import handle_reaction
 from util.config import Config
 
@@ -55,7 +55,15 @@ class OutfitSquareBot(commands.Bot):
                 f"Please go to the <#{Config.ATTENDANCE_CHANNEL_ID}> channel for Rank Checking."
             )
             return
-
+        # Default to the msg's author if no member is specified
+        member = member or ctx.author
+        # Retrieve the member's rank
+        user_rank: dict = self.mongo_client.get_user_rank(member.id)
+        # Check if the member has a rank
+        if user_rank["rank"] is not None:
+            # The embed message showing the member's rank
+            rank_embed = await embed_rank_message(member, user_rank)
+            await ctx.send(embed=rank_embed)
 
     async def attend_command(self, ctx, member: discord.Member = None):
         if (
