@@ -22,6 +22,7 @@ class OutfitSquareBot(commands.Bot):
         # Register the commands explicitly
         self.command(name="attend")(self.attend_command)
         self.command(name="check-points", aliases=["cp"])(self.check_points_command)
+        self.command(name="my-rank", aliases=["mr"])(self.my_rank)
 
     async def on_ready(self):
         print(f"Logged in as {self.user}")
@@ -44,6 +45,17 @@ class OutfitSquareBot(commands.Bot):
         user_points = self.mongo_client.get_user_points(member.id)
         points_embed = await embed_points_message(member, user_points)
         await ctx.send(embed=points_embed)
+
+    async def my_rank(self, ctx, member: discord.Member = None):
+        if ctx.guild.id != Config.GUILD_ID:
+            return
+
+        if ctx.channel.id != Config.ATTENDANCE_CHANNEL_ID:
+            await ctx.reply(
+                f"Please go to the <#{Config.ATTENDANCE_CHANNEL_ID}> channel for Rank Checking."
+            )
+            return
+
 
     async def attend_command(self, ctx, member: discord.Member = None):
         if (

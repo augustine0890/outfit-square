@@ -73,3 +73,18 @@ class MongoDBInterface:
             }
         else:
             return {"points": 0, "updatedAt": None}
+
+    def get_user_rank(self, user_id: int) -> dict:
+        # Create a pipeline
+        pipeline = [
+            {"$match": {"points": {"$exists": True}}},
+            {"$sort": {"points": -1}},
+            {"$group": {"_id": None, "rankings": {"$push": "$_id"}}},
+            {
+                "$project": {
+                    "rankIndex": {"$indexOfArray": ["$rankings", user_id]},
+                    "count": {"$size": "$rankings"},
+                }
+            },
+            {"$project": {"rank": {"$add": ["$rankIndex", 1]}, "count": 1}},
+        ]
