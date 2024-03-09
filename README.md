@@ -12,6 +12,8 @@ git clone https://github.com/augustine0890/outfit-square
 cd outfit-square
 ```
 4. Install dependencies using Poetry: `poetry install`
+   - Use the `--no-dev` option with `poetry install` to exclude the development dependencies:
+     - `poetry install --no-dev`
 5. Notes:
 - Add new packages to the project: `poetry add <package-name>`
   - Remove a package: `poetry remove <package-name>`

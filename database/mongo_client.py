@@ -62,7 +62,7 @@ class MongoDBInterface:
     def get_user_points(self, user_id: int) -> dict:
         # Create a filter to find the user by id
         filter_id = {"_id": user_id}
-        # # Specify the fields to return
+        # Specify the fields to return
         projection = {"points": 1, "updatedAt": 1}
         result = self.user_collection.find_one(filter_id, projection)
         # If a user is found, return their points and updatedAt. Otherwise, return {'points': 0, 'updatedAt': None}
@@ -73,3 +73,33 @@ class MongoDBInterface:
             }
         else:
             return {"points": 0, "updatedAt": None}
+
+    # Calculate and return the rank of a user based on their points
+    def get_user_rank(self, user_id: int) -> dict:
+        # Define the MongoDB aggregation pipeline
+        pipeline = [
+            {
+                "$match": {"points": {"$exists": True}}
+            },  # Filter the documents that have 'points'
+            {"$sort": {"points": -1}},  # Sort documents
+            {
+                "$group": {"_id": None, "rankings": {"$push": "$_id"}}
+            },  # Group all documents to create a rankings list
+            {
+                "$project": {
+                    "rankIndex": {
+                        "$indexOfArray": ["$rankings", user_id]
+                    },  # Find the index (rank) of the user_id in the rankings
+                    "count": {"$size": "$rankings"},
+                }
+            },
+            {
+                "$project": {"rank": {"$add": ["$rankIndex", 1]}, "count": 1}
+            },  # Adjust rank to be 1-based instead of 0-based
+        ]
+        # Execute the aggregation pipeline
+        result = list(self.user_collection.aggregate(pipeline))
+        if result:
+            return {"rank": result[0]["rank"], "count": result[0]["count"]}
+        else:
+            return {"rank": None, "count": 0}

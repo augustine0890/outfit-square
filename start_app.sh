@@ -18,7 +18,8 @@ if [ $? -ne 0 ]; then
 fi
 
 # Install dependencies to ensure they are up to date
-poetry install
+poetry install --no-dev
+# poetry install
 
 # Check if the application is already running
 if [ -f outfit-square.pid ]; then
