@@ -7,6 +7,8 @@ import sys
 from bot.discord_client import OutfitSquareBot
 
 if __name__ == "__main__":
+    # Stage argument
+    valid_stages = ["dev", "development"]
     # Default to production environment if no argument is provided
     stage_arg = "prod"
     # Load environment based on command-line argument
@@ -15,6 +17,10 @@ if __name__ == "__main__":
         try:
             stage_index = sys.argv.index("--stage")
             stage_arg = sys.argv[stage_index + 1].lower()
+            # Validate the stage argument
+            if stage_arg not in valid_stages:
+                print("Invalid stage. The valid stages are: dev, development")
+                sys.exit(1)
         except IndexError:
             print("Error: Please provide a value for --stage argument.")
             sys.exit(1)
