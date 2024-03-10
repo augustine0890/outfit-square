@@ -66,10 +66,9 @@ class OutfitSquareBot(commands.Bot):
             await ctx.send(embed=rank_embed)
 
     async def attend_command(self, ctx, member: discord.Member = None):
-        if (
-            ctx.guild.id != Config.GUILD_ID
-            or ctx.channel.id != Config.ATTENDANCE_CHANNEL_ID
-        ):
+        if ctx.guild.id != Config.GUILD_ID:
+            return
+        if ctx.channel.id != Config.ATTENDANCE_CHANNEL_ID:
             await ctx.reply(
                 f"Please use this command in the <#{Config.ATTENDANCE_CHANNEL_ID}> channel."
             )
