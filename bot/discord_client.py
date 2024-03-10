@@ -24,6 +24,9 @@ class OutfitSquareBot(commands.Bot):
         self.command(name="check-points", aliases=["cp"])(self.check_points_command)
         self.command(name="my-rank", aliases=["mr"])(self.my_rank)
 
+        # Load the cog using its module path, adjust "bot.slash_command" as needed for your project structure
+        self.load_extension("bot.slash_command")
+
     async def on_ready(self):
         print(f"Logged in as {self.user}")
 
