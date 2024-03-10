@@ -18,7 +18,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Install dependencies to ensure they are up to date
-poetry install --no-dev
+poetry install --only main
 # poetry install
 
 # Check if the application is already running
