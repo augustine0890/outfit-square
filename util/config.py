@@ -6,6 +6,7 @@ class Config:
     MAX_POINTS = 200000
     ATTENDANCE_CHANNEL_ID = 1207877436163760198
     ANNOUNCEMENT_CHANNEL_ID = 1207618904017604668
+    WEEKLY_LOTTO_CHANNEL_ID = 1214012922825539614
     GUILD_ID = 1202064555753353276
 
     @classmethod
@@ -14,6 +15,7 @@ class Config:
         if stage == "dev":
             cls.ATTENDANCE_CHANNEL_ID = 1021958640829210674
             cls.ANNOUNCEMENT_CHANNEL_ID = 1209051632655142922
+            cls.WEEKLY_LOTTO_CHANNEL_ID = 1128945953781579816
             cls.GUILD_ID = 1019782712799805440
             load_dotenv("./dev.env")
         else:  # Default to production environment
