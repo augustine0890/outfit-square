@@ -17,7 +17,8 @@ class SlashCommands(commands.Cog):
         message_content = (
             "Hey guys, check out our **Discord Bot beta service**- it's lit! :fire: \n"
             ":hugging: Below is what it's all about:\n\n"
-            "**1. Cool Commands :computer:** We've got 4 cool commands in the attendance channel:\n"
+            f"**1. Cool Commands :computer:** We've got 4 cool commands in the <#{Config.ATTENDANCE_CHANNEL_ID}> "
+            f"channel:\n"
             "a. `!attend` - Pop in daily to Outfit Square Discord.\n"
             "b. `!cp` - See how many points you've racked up.\n"
             "c. `!rank` - Scope out the Cumulative Points TOP 10 Leaderboard.\n"
