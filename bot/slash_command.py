@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from util.config import Config
+from util.helper import get_week_number
 
 
 class SlashCommands(commands.Cog):
@@ -38,7 +39,7 @@ class SlashCommands(commands.Cog):
             "We're constantly updating Discord through this beta. Our ultimate goal? Official service with levels and mini-games to boost our community vibes. :earth_americas:\n"
             "Thanks for sticking with us - we're on a mission to make Outfit Square even better for everyone! :purple_heart:"
         )
-        await ctx.respond(message_content)
+        await ctx.respond(message_content, delete_after=60)
 
     @commands.slash_command(
         guild_ids=[Config.GUILD_ID],
@@ -77,7 +78,7 @@ class SlashCommands(commands.Cog):
             "- **Every Monday at 03:00 (UTC+0)**, we'll shout out last week's winners.\n\n"
             "Get your game face on - see you at the Weekly Lotto! :tada::crystal_ball:"
         )
-        await ctx.respond(message_content)
+        await ctx.respond(message_content, delete_after=60)
 
     @commands.slash_command(name="lotto", description="Weekly Lottery")
     async def lotto(
@@ -95,6 +96,25 @@ class SlashCommands(commands.Cog):
         # Implement the command logic here
         response_message = f"Lotto numbers received: {first_number}, {second_number}, {third_number}, {fourth_number}"
         await ctx.response.send_message(response_message, ephemeral=True)
+
+    @commands.slash_command(name="check-lotto", description="This week's lotto guesses")
+    async def check_lotto(self, ctx: discord.ApplicationContext):
+        # Get the current week number
+        current_year, current_week = get_week_number()
+        user_id = ctx.author.id
+
+        # Get the user's lotto guesses
+
+        # If the user hasn't made any guesses yet, send a reminder to participate
+        reminder_message = (
+            f"Sorry, you haven’t joined the Weekly Lotto this week yet :frowning2:\nType **“/lotto”** "
+            f"in <#{Config.WEEKLY_LOTTO_CHANNEL_ID}> channel to try your luck! 🍀"
+        )
+        # await ctx.response.send_message(reminder_message)
+
+        # If the user has made guesses, construct an embed with the details of their guesses
+        await ctx.response.send_message(reminder_message, ephemeral=True)
+        return
 
 
 def setup(bot):

@@ -1,5 +1,5 @@
 from pymongo import MongoClient
-from .model import User, Activity, ActivityType
+from .model import User, Activity, ActivityType, LottoGuess
 from datetime import datetime, timezone
 
 
@@ -9,6 +9,8 @@ class MongoDBInterface:
         self.db = self.client[dbname]
         self.user_collection = self.db["user"]
         self.activity_collection = self.db["activity"]
+        self.lottoguess_collection = self.db["lottoguess"]
+        self.lottodraw_collection = self.db["lottodraw"]
 
     def add_or_update_user_points(self, user: User):
         # Create a filter to find the user by id
@@ -103,3 +105,18 @@ class MongoDBInterface:
             return {"rank": result[0]["rank"], "count": result[0]["count"]}
         else:
             return {"rank": None, "count": 0}
+
+    def try_add_lotto_guess(self, guess: LottoGuess) -> bool:
+        """True if the guess was successfully added, False if the user has reached the maximum number of guesses for
+        the week."""
+        guess_dict = guess.dict(by_alias=True, exclude_none=True)
+        # Check how many guesses the user has made this week
+        count_guess = self.lottoguess_collection.count_documents(
+            {"dcId": guess_dict["dcId"], "weekNumber": guess_dict["weekNumber"]}
+        )
+        # If the user has made 5 or more guesses this week, return false
+        if count_guess < 5:
+            self.lottoguess_collection.insert_one(guess_dict)
+            return True
+
+        return False
