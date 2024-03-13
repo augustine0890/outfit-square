@@ -46,9 +46,38 @@ class SlashCommands(commands.Cog):
         description="The official guideline for Weekly Lotto",
     )  # Replace with actual guild ID(s)
     async def lotto_guideline(self, ctx: discord.ApplicationContext):
-        # Implement the command logic here
-
-        await ctx.respond("The official guideline for Weekly Lotto")
+        message_content = (
+            ":dress: Welcome to **Outfit Square Weekly Lotto** - where the fashion game is on fire! :slot_machine:\n\n"
+            "*How to join? :man_shrugging_tone1:*\n"
+            f"1. Head over to the <#{Config.WEEKLY_LOTTO_CHANNEL_ID}> channel.\n"
+            "2. Type `/lotto` and pick your lucky 4 single-digit numbers (between 0-9), like '1', '5', '4', '7'.\n"
+            "3. Once you're in, you'll get a sweet confirmation message! :incoming_envelope:\n"
+            "4. Want to double-check your entry? Just type `/check-lotto` to see your picks for this and last week.\n\n"
+            "*Rules :straight_ruler: *\n"
+            "- Choose 4 single-digit numbers (between 0-9).\n"
+            "- Your numbers need to match both the **value** and **position** of the winning numbers to score.\n"
+            "*Example*: Let's say the winning numbers are '0', '6', '0', '6'.\n"
+            "- If Mary picked '1', '0', '6', '9' —> 0 matches\n"
+            "- If Sally picked '1', '3', '4', '6' —> 1 match\n"
+            "- If Tom picked '6', '0', '0', '6' —> 2 matches\n"
+            "- If David picked '2', '6', '0', '6' —> 3 matches\n"
+            "- If Jenny picked '0', '6', '0', '6' —> 4 matches\n\n"
+            "*Prizes :moneybag: *\n"
+            "0 matches: No points\n"
+            "1 match: 400 points\n"
+            "2 matches: 1,000 points\n"
+            "3 matches: 5,000 points + Level 1 Badge\n"
+            "4 matches: 100,000 points + Level 2 Badge\n"
+            "Winners will get a heads-up via DM. :envelope_with_arrow:\n\n"
+            "*Participation guidelines :rocket: *\n"
+            "- It's totally **free from XX Apr - XX May at 3:00 (UTC+0)**; you can join up to 3 times a week.\n"
+            "- After the freebie period, it's 200 points to play; max 5 times a week.\n\n"
+            "*When's Game Time? :watch: *\n"
+            "- Entries open **Monday 00:00 - Sunday 23:59 (UTC+0)**.\n"
+            "- **Every Monday at 03:00 (UTC+0)**, we'll shout out last week's winners.\n\n"
+            "Get your game face on - see you at the Weekly Lotto! :tada::crystal_ball:"
+        )
+        await ctx.respond(message_content)
 
     @commands.slash_command(name="lotto", description="Weekly Lottery")
     async def lotto(
