@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from util.config import Config
-from datetime import datetime, date
+from util.helper import get_week_number
 
 
 class SlashCommands(commands.Cog):
@@ -100,9 +100,7 @@ class SlashCommands(commands.Cog):
     @commands.slash_command(name="check-lotto", description="This week's lotto guesses")
     async def check_lotto(self, ctx: discord.ApplicationContext):
         # Get the current week number
-        today_date = datetime.now()
-        current_year, current_week = today_date.year, today_date.isocalendar().week
-        print(current_week, current_year)
+        current_year, current_week = get_week_number()
         user_id = ctx.author.id
 
         # Get the user's lotto guesses
@@ -115,9 +113,7 @@ class SlashCommands(commands.Cog):
         # await ctx.response.send_message(reminder_message)
 
         # If the user has made guesses, construct an embed with the details of their guesses
-        await ctx.response.send_message(
-            embed=discord.Embed(description=reminder_message), ephemeral=True
-        )
+        await ctx.response.send_message(reminder_message, ephemeral=True)
         return
 
 
