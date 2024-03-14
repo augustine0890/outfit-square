@@ -2,11 +2,13 @@ import discord
 from discord.ext import commands
 from util.config import Config
 from util.helper import get_week_number
+from database.mongo_client import MongoDBInterface
 
 
 class SlashCommands(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot, db: MongoDBInterface):
         self.bot = bot
+        self.db_client = db
 
     # Example of a guild-specific slash command
     @commands.slash_command(
@@ -93,7 +95,29 @@ class SlashCommands(commands.Cog):
             int, "The fourth number", min_value=0, max_value=9
         ),
     ):
-        # Implement the command logic here
+        if ctx.channel.id != Config.WEEKLY_LOTTO_CHANNEL_ID:
+            await ctx.respond(
+                f"Please go to the <#{Config.WEEKLY_LOTTO_CHANNEL_ID}> channel to participate in the LOTTO game 🎰",
+                delete_after=15,
+            )
+            return
+
+        # Check if the user has enough points
+        user = ctx.author
+        fee_points: int = 200
+        user_points = self.db_client.get_user_points(user.id)
+        if user_points.get("points", 0) < fee_points:
+            await ctx.respond(
+                "Sorry! You do not have sufficient points to cover the lottery fee. Try to earn more points! "
+                "🏋️‍♂️💪🏋️‍♀️",
+                ephemeral=True,
+            )
+            return
+
+        guessed_numbers = [first_number, second_number, third_number, fourth_number]
+        # Get the current week number
+        current_year, current_week = get_week_number()
+
         response_message = f"Lotto numbers received: {first_number}, {second_number}, {third_number}, {fourth_number}"
         await ctx.response.send_message(response_message, ephemeral=True)
 
