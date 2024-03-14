@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from .model import User, Activity, ActivityType, LottoGuess
 from datetime import datetime, timezone
+from typing import List, Optional
 
 
 class MongoDBInterface:
@@ -105,6 +106,12 @@ class MongoDBInterface:
             return {"rank": result[0]["rank"], "count": result[0]["count"]}
         else:
             return {"rank": None, "count": 0}
+
+    def get_lotto_draw(self, year: int, week_number: int) -> Optional[List[int]]:
+        """A list of integers representing the lotto draw numbers if found, otherwise returns None"""
+        filter_week = {"year": year, "week_number": week_number}
+        result = self.lottodraw_collection.find_one(filter_week)
+        return result.get("numbers") if result else None
 
     def try_add_lotto_guess(self, guess: LottoGuess) -> bool:
         """True if the guess was successfully added, False if the user has reached the maximum number of guesses for
