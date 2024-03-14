@@ -91,6 +91,40 @@ class Activity(BaseModel):
         }
 
 
+class LottoDraw(BaseModel):
+    id: Optional[PyObjectId] = Field(
+        alias="_id", default=None, description="The identifier of the Lotto Draw"
+    )
+    numbers: List[int] = Field(
+        ...,
+        description="List of integers representing the Lotto Draw numbers",
+    )
+    year: int = Field(..., description="The current year of the Lotto Draw")
+    weekNumber: int = Field(
+        ..., description="The current week number of the Lotto Draw"
+    )
+    createdAt: datetime = Field(
+        default_factory=datetime.utcnow,
+        description="The Date and time when the Lotto Draw record was created",
+    )
+
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {
+            datetime: lambda v: v.isoformat(),
+        }
+        json_schema_extra = {
+            "example": {
+                "id": "659b239d3c9b05d1579fa07a",
+                "numbers": [3, 7, 1, 9],
+                "year": 2024,
+                "weekNumber": 11,
+                "createdAt": "2024-01-01T00:00:00Z",
+            }
+        }
+
+
 class LottoGuess(BaseModel):
     id: Optional[PyObjectId] = Field(
         alias="_id", default=None, description="The identifier of the lotto guess"
@@ -105,7 +139,7 @@ class LottoGuess(BaseModel):
     )
     numbers: List[int] = Field(
         ...,
-        description="ist of integers representing the participant's guessed lotto numbers",
+        description="List of integers representing the participant's guessed lotto numbers",
     )
     year: int = Field(..., description="Year in which the guess was submitted")
     weekNumber: int = Field(
