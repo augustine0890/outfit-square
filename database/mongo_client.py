@@ -1,5 +1,6 @@
 from pymongo import MongoClient
-from .model import User, Activity, ActivityType, LottoGuess
+from .model import User, Activity, ActivityType, LottoGuess, LottoDraw
+from util.helper import get_week_number, lotto_drawing
 from datetime import datetime, timezone
 from typing import List, Optional
 
@@ -106,6 +107,25 @@ class MongoDBInterface:
             return {"rank": result[0]["rank"], "count": result[0]["count"]}
         else:
             return {"rank": None, "count": 0}
+
+    def add_weekly_draw(self) -> bool:
+        """Return True if a new draw was added, False otherwise."""
+        # Get the current week number
+        current_year, current_week = get_week_number()
+        draw_numbers: List[int] = lotto_drawing()
+
+        # Check if a draw for the current week already exists
+        if not self.lottodraw_collection.find_one(
+            {"year": current_year, "weekNumber": current_week}
+        ):
+            # Create and insert the LottoDraw
+            lotto_draw = LottoDraw(
+                numbers=draw_numbers, year=current_year, weekNumber=current_week
+            )
+            lotto_draw_dict = lotto_draw.dict(by_alias=True, exclude_none=True)
+            self.lottodraw_collection.insert_one(lotto_draw_dict)
+            return True
+        return False
 
     def get_lotto_draw(self, year: int, week_number: int) -> Optional[List[int]]:
         """A list of integers representing the lotto draw numbers if found, otherwise returns None"""
