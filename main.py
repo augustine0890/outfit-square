@@ -11,9 +11,11 @@ from util.scheduler import TaskScheduler
 
 if __name__ == "__main__":
     # Configure logging to include the timestamp, log level, and message
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s - %(levelname)s - %(message)s',
-                        datefmt='%Y-%m-%d %H:%M:%S')
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
 
     # Stage argument
     valid_stages = ["dev", "development"]
@@ -53,10 +55,16 @@ if __name__ == "__main__":
 
     # Establish the MongoDB connection instance
     mongo_client = MongoDBInterface(mongo_uri, "outfit-square")
+
+    # Initialize and run the Bot
+    bot = OutfitSquareBot(discord_token, mongo_client)
+
     # Setup and start the task scheduler
     scheduler = TaskScheduler(database=mongo_client)
     scheduler.setup_schedule()
-    # Initialize and run the Bot
-    bot = OutfitSquareBot(discord_token, mongo_client)
-    bot.run_bot()
 
+    # Setup and start the task scheduler, now passing the bot instance
+    # scheduler = TaskScheduler(database=mongo_client, bot=bot)
+
+    # Finally, run the Bot
+    bot.run_bot()
