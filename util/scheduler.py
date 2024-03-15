@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from datetime import datetime
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -48,12 +49,39 @@ class TaskScheduler:
                     )
 
     def setup_schedule(self):
-        # Weekly Draw (Every Monday at midnight)
-        self.scheduler.add_job(
-            self.task_wrapper,
-            args=[self.db.add_weekly_draw],
-            # trigger=CronTrigger(second=15),
-            trigger=CronTrigger(day_of_week="mon", hour="0", minute="0"),
-        )
+        # Define your jobs with their specifics in a list
+        jobs = [
+            {
+                # Weekly Draw (Every Monday at midnight)
+                "func": self.task_wrapper,
+                "args": [self.db.add_weekly_draw],
+                # trigger=CronTrigger(second=15),
+                "trigger": CronTrigger(day_of_week="mon", hour="0", minute="0"),
+                "name": "Lotto Draw Generation",
+            },
+            # Add more jobs here with their respective details
+        ]
+
+        for job in jobs:
+            scheduled_job = self.scheduler.add_job(
+                func=job["func"],
+                args=job["args"],
+                trigger=job["trigger"],
+                name=job.get("name"),
+            )
+
+            # Calculate the time until the next trigger and log it
+            if scheduled_job.next_run_time:
+                now = datetime.now(scheduled_job.next_run_time.tzinfo)
+                time_until_next_trigger = scheduled_job.next_run_time - now
+                days_until_next_trigger = time_until_next_trigger.days
+                logging.info(
+                    f"[{job.get('name')}] Waiting [{days_until_next_trigger} days] until next scheduled event (next "
+                    f"trigger): [{scheduled_job.next_run_time}]"
+                )
+            else:
+                logging.warning(
+                    f"Job {job.get('name')} scheduled but next_run_time is None. Check your scheduler configuration."
+                )
 
         logging.info("Schedules are set up.")
