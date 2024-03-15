@@ -6,9 +6,9 @@ from database.mongo_client import MongoDBInterface
 
 
 class SlashCommands(commands.Cog):
-    def __init__(self, bot, db: MongoDBInterface):
+    def __init__(self, bot):
         self.bot = bot
-        self.db_client = db
+        self.db_client = bot.mongo_client
 
     # Example of a guild-specific slash command
     @commands.slash_command(

@@ -1,3 +1,5 @@
+import logging
+
 import discord
 from discord.ext import commands
 from database.mongo_client import MongoDBInterface
@@ -9,7 +11,7 @@ from util.config import Config
 
 
 class OutfitSquareBot(commands.Bot):
-    def __init__(self, token, mongo_uri, mongo_dbname):
+    def __init__(self, token, mongo_client: MongoDBInterface):
         intents = discord.Intents.default()
         intents.members = True
         intents.message_content = (
@@ -17,7 +19,7 @@ class OutfitSquareBot(commands.Bot):
         )
         super().__init__(command_prefix="!", intents=intents)
         self.token = token
-        self.mongo_client = MongoDBInterface(mongo_uri, mongo_dbname)
+        self.mongo_client = mongo_client
 
         # Register the commands explicitly
         self.command(name="attend")(self.attend_command)
@@ -28,7 +30,7 @@ class OutfitSquareBot(commands.Bot):
         self.load_extension("bot.slash_command")
 
     async def on_ready(self):
-        print(f"Logged in as {self.user}")
+        logging.info(f"Logged in as {self.user}")
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -125,7 +127,7 @@ class OutfitSquareBot(commands.Bot):
                 f"Congratulations <@{member.id}>! You've got 50 points for daily attendance 🎉 See you tomorrow!"
             )
         except Exception as e:
-            print(f"Error processing attendance: {e}")
+            logging.error(f"Error processing attendance: {e}")
             await ctx.send("An error occurred while marking attendance.")
 
     def run_bot(self):
