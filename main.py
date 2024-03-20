@@ -59,12 +59,9 @@ if __name__ == "__main__":
     # Initialize and run the Bot
     bot = OutfitSquareBot(discord_token, mongo_client)
 
-    # Setup and start the task scheduler
-    scheduler = TaskScheduler(database=mongo_client)
-    scheduler.setup_schedule()
-
     # Setup and start the task scheduler, now passing the bot instance
-    # scheduler = TaskScheduler(database=mongo_client, bot=bot)
+    scheduler = TaskScheduler(bot=bot)
+    scheduler.setup_schedule()
 
     # Finally, run the Bot
     bot.run_bot()
