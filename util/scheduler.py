@@ -5,15 +5,15 @@ from datetime import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from concurrent.futures import ThreadPoolExecutor
-from database.mongo_client import MongoDBInterface
+from bot.discord_client import OutfitSquareBot
 from typing import Callable
 
 
 class TaskScheduler:
     """A class for managing scheduled tasks."""
 
-    def __init__(self, database: MongoDBInterface):
-        self.db = database
+    def __init__(self, bot: OutfitSquareBot):
+        self.db = bot.mongo_client
         self.scheduler = AsyncIOScheduler()
         self.scheduler.start()
         self.executor = ThreadPoolExecutor(max_workers=4)
@@ -55,8 +55,8 @@ class TaskScheduler:
                 # Weekly Draw (Every Monday at midnight)
                 "func": self.task_wrapper,
                 "args": [self.db.add_weekly_draw],
-                # trigger=CronTrigger(second=15),
-                "trigger": CronTrigger(day_of_week="mon", hour="0", minute="0"),
+                "trigger": CronTrigger(second=15),
+                # "trigger": CronTrigger(day_of_week="mon", hour="0", minute="0"),
                 "name": "Lotto Draw Generation",
             },
             # Add more jobs here with their respective details
