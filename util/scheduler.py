@@ -55,8 +55,8 @@ class TaskScheduler:
                 # Weekly Draw (Every Monday at midnight)
                 "func": self.task_wrapper,
                 "args": [self.db.add_weekly_draw],
-                "trigger": CronTrigger(second=15),
-                # "trigger": CronTrigger(day_of_week="mon", hour="0", minute="0"),
+                # "trigger": CronTrigger(second=15),
+                "trigger": CronTrigger(day_of_week="mon", hour="0", minute="0"),
                 "name": "Lotto Draw Generation",
             },
             # Add more jobs here with their respective details
