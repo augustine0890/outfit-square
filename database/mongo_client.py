@@ -22,12 +22,14 @@ class MongoDBInterface:
             # Ensure that the _id is properly set as an integer
             "$setOnInsert": {
                 "_id": user.id,
-                "userName": user.userName,
                 "createdAt": user.createdAt,
             },
             "$inc": {"points": user.points},
             "$set": {"updatedAt": datetime.utcnow()},
         }
+        # Conditionally add userName if it exists
+        if user.userName:
+            update_doc["$setOnInsert"]["userName"] = user.userName
 
         # Perform the database operation
         result = self.user_collection.update_one(filter_id, update_doc, upsert=True)

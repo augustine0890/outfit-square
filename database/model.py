@@ -9,7 +9,7 @@ from typing_extensions import Annotated
 
 class User(BaseModel):
     id: int = Field(..., alias="_id", description="The unique identifier for the user")
-    userName: str = Field(..., description="The user's name")
+    userName: Optional[str] = Field(None, description="The user's name")
     points: int = Field(..., description="The user's points")
     joinedDate: Optional[datetime] = Field(None, description="The date the user joined")
     createdAt: datetime = Field(
@@ -157,7 +157,7 @@ class LottoGuess(BaseModel):
         ..., description="The points awarded to the participant if they win"
     )
     dmSent: Optional[bool] = Field(
-        ...,
+        default=False,
         description="Flag indicating whether a direct message (DM) was sent to the participant regarding their guess "
         "(optional)",
     )
