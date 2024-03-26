@@ -1,8 +1,11 @@
+import logging
+
 import discord
 from discord.ext import commands
+
+from database.model import LottoGuess, User
 from util.config import Config
-from util.helper import get_week_number
-from database.mongo_client import MongoDBInterface
+from util.helper import get_week_number, calculate_lotto_points
 
 
 class SlashCommands(commands.Cog):
@@ -98,7 +101,7 @@ class SlashCommands(commands.Cog):
         if ctx.channel.id != Config.WEEKLY_LOTTO_CHANNEL_ID:
             await ctx.respond(
                 f"Please go to the <#{Config.WEEKLY_LOTTO_CHANNEL_ID}> channel to participate in the LOTTO game 🎰",
-                delete_after=15,
+                delete_after=30,
             )
             return
 
@@ -117,9 +120,64 @@ class SlashCommands(commands.Cog):
         guessed_numbers = [first_number, second_number, third_number, fourth_number]
         # Get the current week number
         current_year, current_week = get_week_number()
+        # Retrieve the draw numbers from the database
+        draw_numbers = self.db_client.get_lotto_draw(current_year, current_week)
+        if not draw_numbers:
+            await ctx.respond(
+                ":game_die: Attention all players! The highly anticipated LOTTO game is about to kick "
+                "off! :game_die:"
+            )
+            return
+        # Calculate matching numbers and corresponding reward points
+        matches, reward_points = calculate_lotto_points(guessed_numbers, draw_numbers)
 
-        response_message = f"Lotto numbers received: {first_number}, {second_number}, {third_number}, {fourth_number}"
-        await ctx.response.send_message(response_message, ephemeral=True)
+        try:
+            lotto_guess_data = {
+                "dcId": user.id,
+                "dcUsername": user.display_name,
+                "numbers": guessed_numbers,
+                "year": current_year,
+                "weekNumber": current_week,
+                "matchedCount": matches,
+                "isMatched": matches > 0,
+                "points": reward_points,
+            }
+            lotto_guess = LottoGuess(**lotto_guess_data)
+            lotto_added = self.db_client.try_add_lotto_guess(lotto_guess)
+            # The user has already made 5 guesses this week
+            if not lotto_added:
+                content = (
+                    ":star2: Wow, you’ve made 5 guesses this week! :clap: Let’s hit pause and come back next "
+                    "week for more fun. :wink:"
+                )
+                await ctx.respond(content)
+                return
+
+            response_message = (
+                f"You have chosen {first_number}, {second_number}, {third_number}, {fourth_number} for "
+                f"the lotto 🎰\nThe results will be revealed on the upcoming Monday at 03:00 (UTC+0) "
+                f"😎\nGood luck! 🍀"
+            )
+            await ctx.response.send_message(response_message, ephemeral=True)
+
+            public_message = (
+                f"🎲 The lotto is heating up! <@{user.id}> is in - will you be next? Check out "
+                f"`/lotto-guideline` and participate! 💰"
+            )
+            await ctx.send(public_message)
+        except Exception as e:
+            logging.error(f"Error while adding the lotto guess: {e}")
+
+        try:
+            user_data = {
+                "id": user.id,
+                "points": -200,
+            }
+            user = User(**user_data)
+            self.db_client.add_or_update_user_points(user)
+            return
+        except Exception as e:
+            logging.error(f"Error subtracting the Lotto fee: {e}")
 
     @commands.slash_command(name="check-lotto", description="This week's lotto guesses")
     async def check_lotto(self, ctx: discord.ApplicationContext):
