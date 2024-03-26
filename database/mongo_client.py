@@ -129,7 +129,7 @@ class MongoDBInterface:
 
     def get_lotto_draw(self, year: int, week_number: int) -> Optional[List[int]]:
         """A list of integers representing the lotto draw numbers if found, otherwise returns None"""
-        filter_week = {"year": year, "week_number": week_number}
+        filter_week = {"year": year, "weekNumber": week_number}
         result = self.lottodraw_collection.find_one(filter_week)
         return result.get("numbers") if result else None
 
