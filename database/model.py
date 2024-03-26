@@ -7,6 +7,12 @@ from enum import Enum
 from typing_extensions import Annotated
 
 
+class UpdateUserPoints(str, Enum):
+    SUCCESS = "success"
+    MAX_POINTS_REACHED = "max_points_reached"
+    ERROR = "error"
+
+
 class User(BaseModel):
     id: int = Field(..., alias="_id", description="The unique identifier for the user")
     userName: Optional[str] = Field(None, description="The user's name")
