@@ -1,8 +1,10 @@
 from pymongo import MongoClient
-from .model import User, Activity, ActivityType, LottoGuess, LottoDraw
+import logging
+from .model import User, Activity, ActivityType, LottoGuess, LottoDraw, UpdateUserPoints
 from util.helper import get_week_number, lotto_drawing
 from datetime import datetime, timezone
 from typing import List, Optional
+from util.config import Config
 
 
 class MongoDBInterface:
@@ -15,6 +17,19 @@ class MongoDBInterface:
         self.lottodraw_collection = self.db["lottodraw"]
 
     def add_or_update_user_points(self, user: User):
+        # Get the current points of the user
+        current_points_result = self.get_user_points(user_id=user.id)
+        current_points = current_points_result["points"]
+        points_to_add = user.points
+        if user.points > 0:  # Adding points
+            if current_points >= Config.MAX_POINTS:
+                # Current points already exceed max, do nothing
+                return UpdateUserPoints.MAX_POINTS_REACHED, current_points
+            if current_points + user.points > Config.MAX_POINTS:
+                # Adjust points to add if it would exceed max points
+                points_to_add = Config.MAX_POINTS - current_points
+        # If subtracting points, points_to_add remains as user.points (allow negative to decrease points)
+
         # Create a filter to find the user by id
         filter_id = {"_id": user.id}
         # Prepare the update document
@@ -24,7 +39,7 @@ class MongoDBInterface:
                 "_id": user.id,
                 "createdAt": user.createdAt,
             },
-            "$inc": {"points": user.points},
+            "$inc": {"points": points_to_add},
             "$set": {"updatedAt": datetime.utcnow()},
         }
         # Conditionally add userName if it exists
@@ -32,10 +47,18 @@ class MongoDBInterface:
             update_doc["$setOnInsert"]["userName"] = user.userName
 
         # Perform the database operation
-        result = self.user_collection.update_one(filter_id, update_doc, upsert=True)
-
-        # If a new document was inserted, return its id. Otherwise, return None.
-        return result.upserted_id
+        try:
+            self.user_collection.update_one(filter_id, update_doc, upsert=True)
+            # Calculate the new points total for success return
+            new_points = current_points + points_to_add
+            return UpdateUserPoints.SUCCESS, new_points
+        except Exception as e:
+            # Log the error for further investigation
+            logging.error(f"Error updating user points for {user.id}: {e}")
+            return (
+                UpdateUserPoints.ERROR,
+                current_points,
+            )  # Return current points in case of error
 
     def add_activity(self, activity: Activity):
         activity_dict = activity.dict(by_alias=True, exclude_none=True)

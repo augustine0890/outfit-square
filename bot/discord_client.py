@@ -3,7 +3,7 @@ import logging
 import discord
 from discord.ext import commands
 from database.mongo_client import MongoDBInterface
-from database.model import User, Activity, ActivityType
+from database.model import User, Activity, ActivityType, UpdateUserPoints
 from datetime import datetime, timezone
 from .embed import embed_points_message, embed_rank_message
 from .reaction import handle_reaction
@@ -78,14 +78,10 @@ class OutfitSquareBot(commands.Bot):
                 f"Please use this command in the <#{Config.ATTENDANCE_CHANNEL_ID}> channel."
             )
             return
-
         if ctx.author.bot:
             return
 
         member = member or ctx.author
-        user_points = self.mongo_client.get_user_points(member.id)
-        points_embed = await embed_points_message(member, user_points)
-
         today = datetime.utcnow().replace(
             tzinfo=timezone.utc, hour=0, minute=0, second=0, microsecond=0
         )
@@ -96,39 +92,59 @@ class OutfitSquareBot(commands.Bot):
                 "createdAt": {"$gte": today},
             }
         )
+        # Only proceed if attendance hasn't been marked today
+        if count_attendance == 0:
+            try:
+                # Update user points and fetch the updated total
+                user_data = {
+                    "id": member.id,
+                    "userName": member.display_name,
+                    "points": 50,
+                }
+                user = User(**user_data)
+                update_status, new_points_total = (
+                    self.mongo_client.add_or_update_user_points(user)
+                )
+                if update_status == UpdateUserPoints.MAX_POINTS_REACHED:
+                    # If max points reached, inform the user without adding attendance points
+                    await ctx.send(
+                        f"<@{member.id}> You may have reached the maximum limit of {Config.MAX_POINTS} points."
+                    )
+                    return
+                else:
+                    # For successful points addition, congratulate the user
+                    await ctx.reply(
+                        f"Congratulations <@{member.id}>! You've got 50 points for daily attendance 🎉 See you tomorrow!"
+                    )
+                # Display the updated points in an embed, regardless of whether new points were added or max was reached
+                points_embed = await embed_points_message(
+                    member, {"points": new_points_total}
+                )
+                await ctx.send(embed=points_embed)
 
-        if count_attendance > 0:
+                # Prepare and add the attendance activity
+                activity_data = {
+                    "dcId": member.id,
+                    "dcUsername": member.name,
+                    "activity": ActivityType.ATTEND,
+                    "reward": 50,
+                }
+                activity = Activity(**activity_data)
+                # Assuming this method correctly adds the activity
+                self.mongo_client.add_activity(activity)
+
+            except Exception as e:
+                logging.error(f"Error processing attendance: {e}")
+                await ctx.send("An error occurred while marking attendance.")
+
+        else:
+            user_points = self.mongo_client.get_user_points(member.id)
+            # Attendance already marked today, show current points
+            points_embed = await embed_points_message(member, user_points)
             await ctx.reply(
                 f"<@{member.id}> has already got the daily attendance points today."
             )
             await ctx.send(embed=points_embed)
-            return
-
-        if (user_points.get("points", 0) + 50) > Config.MAX_POINTS:
-            await ctx.send(
-                f"<@{member.id}> You may have reached the maximum limit of {Config.MAX_POINTS} points."
-            )
-            await ctx.send(embed=points_embed)
-            return
-
-        try:
-            activity_data = {
-                "dcId": member.id,
-                "dcUsername": member.name,
-                "activity": ActivityType.ATTEND,
-                "reward": 50,
-            }
-            activity = Activity(**activity_data)
-            self.mongo_client.add_activity(activity)
-            user_data = {"id": member.id, "userName": member.display_name, "points": 50}
-            user = User(**user_data)
-            self.mongo_client.add_or_update_user_points(user)
-            await ctx.reply(
-                f"Congratulations <@{member.id}>! You've got 50 points for daily attendance 🎉 See you tomorrow!"
-            )
-        except Exception as e:
-            logging.error(f"Error processing attendance: {e}")
-            await ctx.send("An error occurred while marking attendance.")
 
     def run_bot(self):
         self.run(self.token)
