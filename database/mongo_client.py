@@ -45,6 +45,7 @@ class MongoDBInterface:
         # Conditionally add userName if it exists
         if user.userName:
             update_doc["$setOnInsert"]["userName"] = user.userName
+            update_doc["$set"]["userName"] = user.userName
 
         # Perform the database operation
         try:
