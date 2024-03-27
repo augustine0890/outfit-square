@@ -49,8 +49,9 @@ class MongoDBInterface:
                 "userName": user.userName,  # Assuming you always have userName on creation
             }
         else:
-            # User exists, update userName too
-            update_doc["$set"]["userName"] = user.userName
+            if hasattr(user, "userName") and user.userName:
+                # User exists, update userName too
+                update_doc["$set"]["userName"] = user.userName
 
         # Perform the database operation
         try:
