@@ -172,3 +172,20 @@ class MongoDBInterface:
             return True
 
         return False
+
+    def get_top_ten_users(self):
+        """Retrieves the top 10 users from the user collection based on their points."""
+
+        try:
+            # Define the sort and limit
+            sort_and_limit = [("points", -1), ("updatedAt", 1)]
+            top_users_cursor = (
+                self.user_collection.find({}, projection={"points": 1, "userName": 1})
+                .sort(sort_and_limit)
+                .limit(10)
+            )
+
+            top_users = list(top_users_cursor)
+            return True, top_users
+        except Exception as e:
+            return False, str(e)

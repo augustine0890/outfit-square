@@ -5,7 +5,7 @@ from discord.ext import commands
 from database.mongo_client import MongoDBInterface
 from database.model import User, Activity, ActivityType, UpdateUserPoints
 from datetime import datetime, timezone
-from .embed import embed_points_message, embed_rank_message
+from .embed import embed_points_message, embed_rank_message, embed_leaderboard
 from .reaction import handle_reaction
 from util.config import Config
 
@@ -24,6 +24,7 @@ class OutfitSquareBot(commands.Bot):
         # Register the commands explicitly
         self.command(name="attend")(self.attend_command)
         self.command(name="check-points", aliases=["cp"])(self.check_points_command)
+        self.command(name="rank", aliases=["r"])(self.rank)
         self.command(name="my-rank", aliases=["mr"])(self.my_rank)
 
         # Load the cog using its module path, adjust "bot.slash_command" as needed for your project structure
@@ -51,6 +52,27 @@ class OutfitSquareBot(commands.Bot):
         points_embed = await embed_points_message(member, user_points)
         await ctx.send(embed=points_embed)
 
+    async def rank(self, ctx, member: discord.Member = None):
+        if ctx.guild.id != Config.GUILD_ID:
+            return
+
+        if ctx.channel.id != Config.ATTENDANCE_CHANNEL_ID:
+            await ctx.reply(
+                f"Hey, don't forget to hit up the <#{Config.ATTENDANCE_CHANNEL_ID}> channel for your rank check. "
+                f"Catch you there! 😎"
+            )
+            return
+
+        # The bot's user
+        member = member or ctx.bot.user
+
+        # Retrieve the top users from database
+        success, top_users = self.mongo_client.get_top_ten_users()
+        if success:
+            # If retrieval is successful, generate and send the leaderboard rank embed
+            leaderboard_rank = await embed_leaderboard(member, top_users)
+            await ctx.send(embed=leaderboard_rank)
+
     async def my_rank(self, ctx, member: discord.Member = None):
         if ctx.guild.id != Config.GUILD_ID:
             return
@@ -61,7 +83,7 @@ class OutfitSquareBot(commands.Bot):
             )
             return
         # Default to the msg's author if no member is specified
-        member = member or ctx.author
+        member = member or ctx.bot
         # Retrieve the member's rank
         user_rank: dict = self.mongo_client.get_user_rank(member.id)
         # Check if the member has a rank
