@@ -34,17 +34,22 @@ class MongoDBInterface:
         filter_id = {"_id": user.id}
         # Prepare the update document
         update_doc = {
-            # Ensure that the _id is properly set as an integer
-            "$setOnInsert": {
-                "_id": user.id,
-                "createdAt": user.createdAt,
-            },
             "$inc": {"points": points_to_add},
             "$set": {"updatedAt": datetime.utcnow()},
         }
-        # Conditionally add userName if it exists
-        if user.userName:
-            update_doc["$setOnInsert"]["userName"] = user.userName
+
+        # Check if the user is new or updating - simplified for the sake of clarity
+        user_exists = self.user_collection.count_documents({"_id": user.id}) > 0
+
+        if not user_exists:
+            # User does not exist, prepare to insert
+            update_doc["$setOnInsert"] = {
+                "_id": user.id,
+                "createdAt": user.createdAt,
+                "userName": user.userName,  # Assuming you always have userName on creation
+            }
+        else:
+            # User exists, update userName too
             update_doc["$set"]["userName"] = user.userName
 
         # Perform the database operation
