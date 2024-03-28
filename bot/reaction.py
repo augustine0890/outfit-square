@@ -100,9 +100,9 @@ async def handle_reaction(
                 "userName": user.display_name,
                 "points": react_points,
             }
-            user = User(**user_data)
+            user_model = User(**user_data)
             # Update the user model with new points.
-            db_client.add_or_update_user_points(user)
+            db_client.add_or_update_user_points(user_model)
             content = f"<@{user.id}> got 3 points from reacting {emoji} on (https://discord.com/channels/{Config.GUILD_ID}/{message.channel.id}/{message.id}) in the <#{message.channel.id}> channel."
             await channel.send(content)
     except Exception as e:
@@ -125,13 +125,13 @@ async def handle_reaction(
         activity = Activity(**author_activity_data)
         result: bool = db_client.add_reaction_activity(activity)
         if result:
-            user_data = {
+            author_data = {
                 "id": author.id,
                 "userName": author.display_name,
                 "points": receive_points,
             }
-            user = User(**user_data)
-            db_client.add_or_update_user_points(user)
+            author_model = User(**author_data)
+            db_client.add_or_update_user_points(author_model)
             content = (
                 f"<@{author.id}> got 10 points from <@{user.id}>'s reaction {emoji} on (https://discord.com"
                 f"/channels/{Config.GUILD_ID}/{message.channel.id}/{message.id}"
