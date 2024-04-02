@@ -108,8 +108,10 @@ async def handle_reaction(
     except Exception as e:
         print(f"Error adding user's activity: {e}")
 
-    # If the message is from the announcement channel, return early (no points are granted for author)
-    if message.channel.id == Config.ANNOUNCEMENT_CHANNEL_ID:
+    # Return early if the message is from the announcement channel or ignored channels (no points are granted for
+    # author)
+    ignored_channels = {Config.ANNOUNCEMENT_CHANNEL_ID, *Config.IGNORED_CHANNEL_IDS}
+    if message.channel.id in ignored_channels:
         return
 
     # Handle positive reactions for the author of the message.
