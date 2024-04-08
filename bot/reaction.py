@@ -1,3 +1,5 @@
+import logging
+
 import discord
 from discord.ext import commands
 
@@ -106,7 +108,7 @@ async def handle_reaction(
             content = f"<@{user.id}> got 3 points from reacting {emoji} on (https://discord.com/channels/{Config.GUILD_ID}/{message.channel.id}/{message.id}) in the <#{message.channel.id}> channel."
             await channel.send(content)
     except Exception as e:
-        print(f"Error adding user's activity: {e}")
+        logging.error(f"Error adding user's activity: {e}")
 
     # Return early if the message is from the announcement channel or ignored channels (no points are granted for
     # author)
@@ -141,4 +143,4 @@ async def handle_reaction(
             )
             await channel.send(content)
     except Exception as e:
-        print(f"Error adding author's activity: {e}")
+        logging.error(f"Error adding author's activity: {e}")

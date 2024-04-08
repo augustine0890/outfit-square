@@ -8,7 +8,11 @@ class Config:
     ANNOUNCEMENT_CHANNEL_ID = 1207618904017604668
     WEEKLY_LOTTO_CHANNEL_ID = 1214012922825539614
     GUILD_ID = 1202064555753353276
-    IGNORED_CHANNEL_IDS = [1221744372786266112, 1207555439458525264]  # ugc-sneak-peek, ugc-drops
+    IGNORED_CHANNEL_IDS = [
+        1221744372786266112,
+        1207555439458525264,
+        1202064555753353278,
+    ]  # ugc-sneak-peek, ugc-drops, rules-and-info
 
     @classmethod
     def load_env(cls, stage: str):

@@ -7,6 +7,7 @@ from database.model import User, Activity, ActivityType, UpdateUserPoints
 from datetime import datetime, timezone
 from .embed import embed_points_message, embed_rank_message, embed_leaderboard
 from .reaction import handle_reaction
+from .contribute import handle_contribute
 from util.config import Config
 
 
@@ -37,6 +38,10 @@ class OutfitSquareBot(commands.Bot):
     async def on_reaction_add(self, reaction, user):
         await handle_reaction(self, self.mongo_client, reaction, user)
 
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        await handle_contribute(self, self.mongo_client, message)
+
     async def check_points_command(self, ctx, member: discord.Member = None):
         if ctx.guild.id != Config.GUILD_ID:
             return
@@ -66,7 +71,7 @@ class OutfitSquareBot(commands.Bot):
         # The bot's user
         member = member or ctx.bot.user
 
-        # Retrieve the top users from database
+        # Retrieve the top users from a database
         success, top_users = self.mongo_client.get_top_ten_users()
         if success:
             # If retrieval is successful, generate and send the leaderboard rank embed
@@ -134,7 +139,7 @@ class OutfitSquareBot(commands.Bot):
                     )
                     return
                 else:
-                    # For successful points addition, congratulate the user
+                    # On successful points addition, congratulate the user
                     await ctx.reply(
                         f"Congratulations <@{member.id}>! You've got 50 points for daily attendance 🎉 See you tomorrow!"
                     )
