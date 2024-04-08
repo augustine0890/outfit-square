@@ -8,7 +8,7 @@ from util.config import Config
 from database.mongo_client import MongoDBInterface
 
 
-async def handle_contribute(
+async def reward_user_contribution(
     bot: commands.Bot,
     db_client: MongoDBInterface,
     message: discord.Message,

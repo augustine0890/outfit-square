@@ -6,8 +6,8 @@ from database.mongo_client import MongoDBInterface
 from database.model import User, Activity, ActivityType, UpdateUserPoints
 from datetime import datetime, timezone
 from .embed import embed_points_message, embed_rank_message, embed_leaderboard
-from .reaction import handle_reaction
-from .contribute import handle_contribute
+from .reaction_handler import handle_reaction
+from .contribution_handler import reward_user_contribution
 from util.config import Config
 
 
@@ -39,7 +39,7 @@ class OutfitSquareBot(commands.Bot):
         await handle_reaction(self, self.mongo_client, reaction, user)
 
     async def on_message(self, message):
-        await handle_contribute(self, self.mongo_client, message)
+        await reward_user_contribution(self, self.mongo_client, message)
 
         # It allows other commands to be processed.
         await self.process_commands(message)
