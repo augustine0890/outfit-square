@@ -22,6 +22,7 @@ class Config:
             cls.ANNOUNCEMENT_CHANNEL_ID = 1209051632655142922
             cls.WEEKLY_LOTTO_CHANNEL_ID = 1128945953781579816
             cls.GUILD_ID = 1019782712799805440
+            # cls.IGNORED_CHANNEL_IDS = []
             load_dotenv("./dev.env")
         else:  # Default to production environment
             load_dotenv("./prod.env")
