@@ -232,12 +232,12 @@ class SlashCommands(commands.Cog):
     @commands.slash_command(name="check-lotto", description="This week's lotto guesses")
     async def check_lotto(self, ctx: discord.ApplicationContext):
         # Get the current week number
-        current_year, current_week = get_week_number()
-        user_id = ctx.author.id
-        guild_owner = ctx.guild.owner_id
-        print("GUILD_OWNER", guild_owner)
-        roles = ctx.author.roles
-        print("ROLES", roles)
+        # current_year, current_week = get_week_number()
+        # user_id = ctx.author.id
+        # guild_owner = ctx.guild.owner_id
+        # print("GUILD_OWNER", guild_owner)
+        # roles = ctx.author.roles
+        # print("ROLES", roles)
 
         # Get the user's lotto guesses
 
