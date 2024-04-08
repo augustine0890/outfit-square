@@ -6,8 +6,8 @@ from database.mongo_client import MongoDBInterface
 from database.model import User, Activity, ActivityType, UpdateUserPoints
 from datetime import datetime, timezone
 from .embed import embed_points_message, embed_rank_message, embed_leaderboard
-from .reaction import handle_reaction
-from .contribute import handle_contribute
+from .reaction_handler import handle_reaction
+from .contribution_handler import reward_user_contribution
 from util.config import Config
 
 
@@ -38,9 +38,11 @@ class OutfitSquareBot(commands.Bot):
     async def on_reaction_add(self, reaction, user):
         await handle_reaction(self, self.mongo_client, reaction, user)
 
-    @commands.Cog.listener()
     async def on_message(self, message):
-        await handle_contribute(self, self.mongo_client, message)
+        await reward_user_contribution(self, self.mongo_client, message)
+
+        # It allows other commands to be processed.
+        await self.process_commands(message)
 
     async def check_points_command(self, ctx, member: discord.Member = None):
         if ctx.guild.id != Config.GUILD_ID:
@@ -88,7 +90,7 @@ class OutfitSquareBot(commands.Bot):
             )
             return
         # Default to the msg's author if no member is specified
-        member = member or ctx.bot
+        member = member or ctx.author
         # Retrieve the member's rank
         user_rank: dict = self.mongo_client.get_user_rank(member.id)
         # Check if the member has a rank

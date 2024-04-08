@@ -49,7 +49,7 @@ class ActivityType(str, Enum):
     ATTEND = "attend"
     REACT = "react"
     RECEIVE = "receive"
-    CONTRIBUTOR = "contributor"
+    SHARING = "sharing"
     POLL = "poll"
     LOTTO = "lotto"
 
