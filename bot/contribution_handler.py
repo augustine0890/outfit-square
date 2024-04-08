@@ -15,9 +15,7 @@ async def reward_user_contribution(
 ):
     # Define channels
     OOTD_CHANNEL_ID = 1207555773010415616  # OOTD Channel
-    STORE_ADVERTISING_CHANNEL_ID = (
-        1024580423092817981  # 1214380203296686142  # Store Advertising Channel
-    )
+    STORE_ADVERTISING_CHANNEL_ID = 1214380203296686142  # Store Advertising Channel
     UGC_IDEA_CHANNEL_ID = 1207620758814199879  # UGC Idea Channel
     channels = {
         OOTD_CHANNEL_ID: {"reward": 20, "min_length": 0},
