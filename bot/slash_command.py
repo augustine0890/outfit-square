@@ -179,11 +179,65 @@ class SlashCommands(commands.Cog):
         except Exception as e:
             logging.error(f"Error subtracting the Lotto fee: {e}")
 
+    @commands.slash_command(
+        name="revocation",
+        description="Revoke previously awarded points from a user.",
+    )
+    async def revocation(
+        self,
+        ctx: discord.ApplicationContext,
+        user_id: discord.Option(int, "Enter the user ID"),
+        points: discord.Option(
+            int, "Specify the number of points to revoke", min_value=20, max_value=30
+        ),
+    ):
+        # Check if the author has the "admin" role
+        admin_role_name = "admin"
+        # Define admin IDs directly
+        admin_id_list = {1221647973902192751, 1214388994121539624}
+        if (
+            isinstance(ctx.author, discord.Member)
+            and any(role.name.lower() == admin_role_name for role in ctx.author.roles)
+            and ctx.author.id in admin_id_list
+        ):
+            try:
+                # Subtract points from the specified user
+                user_data = {
+                    "id": user_id,
+                    "points": -points,
+                }
+                user = User(**user_data)
+                self.db_client.add_or_update_user_points(user)
+                await ctx.respond(
+                    f"Successfully revoked {points} points from user ID {user_id}.",
+                    ephemeral=True,
+                )
+            except Exception as e:
+                logging.error(f"Error while revoking points: {e}")
+        else:
+            await ctx.respond(
+                "⚠️🚫 **Access Denied!** You do not have the necessary permissions to execute this command. Please "
+                "contact an administrator if you believe this is an error. 🚫⚠️",
+                ephemeral=True,
+            )
+            # Notify an admin via DM about the unauthorized attempt
+            admin = await self.fetch_user(
+                list(admin_id_list)[1]
+            )  # Fetches the first admin in the list for simplicity
+            await admin.send(
+                f"🚨 Unauthorized command usage alert: User {ctx.author.display_name} (ID: {ctx.author.id}) attempted "
+                f"to use the `revocation` command."
+            )
+
     @commands.slash_command(name="check-lotto", description="This week's lotto guesses")
     async def check_lotto(self, ctx: discord.ApplicationContext):
         # Get the current week number
         current_year, current_week = get_week_number()
         user_id = ctx.author.id
+        guild_owner = ctx.guild.owner_id
+        print("GUILD_OWNER", guild_owner)
+        roles = ctx.author.roles
+        print("ROLES", roles)
 
         # Get the user's lotto guesses
 
