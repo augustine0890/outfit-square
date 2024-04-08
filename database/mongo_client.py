@@ -87,10 +87,32 @@ class MongoDBInterface:
             }
         )
 
-        # Logic to check activity type and react accordingly
+        # Logic to check an activity type and react accordingly
         if (activity.activity == ActivityType.REACT and count_reaction > 4) or (
             activity.activity == ActivityType.RECEIVE and count_reaction > 9
         ):
+            return False
+        self.activity_collection.insert_one(activity_dict)
+        return True
+
+    def add_contribution_activity(self, activity: Activity) -> bool:
+        activity_dict = activity.dict(by_alias=True, exclude_none=True)
+        # Use datetime.now(timezone.utc) to get the current UTC time directly
+        today = datetime.utcnow().replace(
+            tzinfo=timezone.utc, hour=0, minute=0, second=0, microsecond=0
+        )
+        # MongoDB query to count the documents
+        count_contribution = self.activity_collection.count_documents(
+            {
+                "dcId": activity_dict["dcId"],
+                "activity": activity.activity,
+                "channel": activity.channel,
+                "createdAt": {"$gte": today},
+            }
+        )
+
+        # Logic to check an activity type and contribution accordingly
+        if activity.activity == ActivityType.SHARING and count_contribution != 0:
             return False
         self.activity_collection.insert_one(activity_dict)
         return True

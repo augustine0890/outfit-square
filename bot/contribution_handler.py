@@ -15,7 +15,9 @@ async def reward_user_contribution(
 ):
     # Define channels
     OOTD_CHANNEL_ID = 1207555773010415616  # OOTD Channel
-    STORE_ADVERTISING_CHANNEL_ID = 1214380203296686142  # Store Advertising Channel
+    STORE_ADVERTISING_CHANNEL_ID = (
+        1024580423092817981  # 1214380203296686142  # Store Advertising Channel
+    )
     UGC_IDEA_CHANNEL_ID = 1207620758814199879  # UGC Idea Channel
     channels = {
         OOTD_CHANNEL_ID: {"reward": 20, "min_length": 0},
@@ -23,7 +25,7 @@ async def reward_user_contribution(
         UGC_IDEA_CHANNEL_ID: {"reward": 30, "min_length": 0},
     }
 
-    # Fetch the designated channel for posting messages about reactions.
+    # Fetch the designated channel for posting messages about contributions.
     bot_channel = bot.get_channel(Config.ATTENDANCE_CHANNEL_ID)
 
     # Skip if a message is from bot or not in designated channels
@@ -53,10 +55,10 @@ async def reward_user_contribution(
 
     # Process activity if conditions met
     if should_reward:
-        await process_activity(message, reward, db_client, bot_channel)
+        await process_contribution_activity(message, reward, db_client, bot_channel)
 
 
-async def process_activity(
+async def process_contribution_activity(
     message: discord.Message,
     reward: int,
     db_client: MongoDBInterface,
@@ -74,7 +76,7 @@ async def process_activity(
             "reward": reward,
         }
         activity = Activity(**activity_data)
-        result: bool = db_client.add_activity(activity)
+        result: bool = db_client.add_contribution_activity(activity)
         if result:
             # Update user points
             author_data = {
@@ -87,9 +89,9 @@ async def process_activity(
 
             # Notify in a bot channel about the reward
             content = (
-                f"Hey, check it out! 🎉<@{author.id}> just bagged {reward} 30 points for sharing cool stuff on ("
+                f"Hey, check it out! 🎉<@{author.id}> just bagged {reward} points for sharing cool stuff on ("
                 f"https://discord.com/channels/{Config.GUILD_ID}/{message.channel.id}/{message.id}"
-                f") in the <#{message.channel.id}> channel. Way to go!🚀👏"
+                f") in the <#{message.channel.id}> channel. Way to go! 🚀👏"
             )
             await bot_channel.send(content)
     except Exception as e:
