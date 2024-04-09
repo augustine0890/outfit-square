@@ -44,7 +44,7 @@ class SlashCommands(commands.Cog):
             "- Share your creative ideas in `ugc-idea` for 30 points! Don't forget to include at least one image. "
             "🖼️\n"
             "- Heads up! If your post doesn't match the channel theme, you might lose some points. 😓\n"
-            "- You can earn up to 80 points a da from posting (only once per day for each channel). So make it "
+            "- You can earn up to 80 points a day from posting (only once per day for each channel). So make it "
             "count! 🚀\n\n"
             "**Top Score To Beat** :trophy:\n"
             "During beta, aim for 200,000 points. Once you hit it, no more points for you. Note: This top score might change during beta.\n\n"
