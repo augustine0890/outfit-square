@@ -13,6 +13,7 @@ class Config:
         1207555439458525264,
         1202064555753353278,
     ]  # ugc-sneak-peek, ugc-drops, rules-and-info
+    ADMIN_IDS = [1221647973902192751, 1214388994121539624]
 
     @classmethod
     def load_env(cls, stage: str):
@@ -22,7 +23,7 @@ class Config:
             cls.ANNOUNCEMENT_CHANNEL_ID = 1209051632655142922
             cls.WEEKLY_LOTTO_CHANNEL_ID = 1128945953781579816
             cls.GUILD_ID = 1019782712799805440
-            # cls.IGNORED_CHANNEL_IDS = []
+            cls.ADMIN_IDS = [623155071735037982]
             load_dotenv("./dev.env")
         else:  # Default to production environment
             load_dotenv("./prod.env")
