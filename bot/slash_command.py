@@ -2,6 +2,7 @@ import logging
 
 import discord
 from discord.ext import commands
+from discord.commands import OptionChoice
 
 from database.model import LottoGuess, User, Activity, ActivityType
 from util.config import Config
@@ -189,13 +190,18 @@ class SlashCommands(commands.Cog):
         ctx: discord.ApplicationContext,
         user_id: discord.Option(str, "Enter the user ID"),
         points: discord.Option(
-            int, "Specify the number of points to revoke", min_value=20, max_value=30
+            int,
+            "Specify the number of points to revoke",
+            choices=[
+                OptionChoice(name="20 Points", value=20),
+                OptionChoice(name="30 Points", value=30),
+            ],
         ),
     ):
         # Check if the author has the "admin" role
         admin_role_name = "admin"
         # Define admin IDs directly
-        admin_id_list = {1221647973902192751, 1214388994121539624}
+        admin_id_list = Config.ADMIN_IDS
         if (
             isinstance(ctx.author, discord.Member)
             and any(role.name.lower() == admin_role_name for role in ctx.author.roles)
@@ -240,8 +246,8 @@ class SlashCommands(commands.Cog):
             )
             # Notify an admin via DM about the unauthorized attempt
             admin = await self.bot.fetch_user(
-                list(admin_id_list)[1]
-            )  # Fetches the first admin in the list for simplicity
+                admin_id_list[-1]
+            )  # Fetches the last admin in the list for simplicity
             if not admin:
                 return
             await admin.send(
