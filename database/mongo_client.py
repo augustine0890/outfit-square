@@ -26,7 +26,7 @@ class MongoDBInterface:
                 # Current points already exceed max, do nothing
                 return UpdateUserPoints.MAX_POINTS_REACHED, current_points
             if current_points + user.points > Config.MAX_POINTS:
-                # Adjust points to add if it would exceed max points
+                # Adjust points to add if it exceeds max points
                 points_to_add = Config.MAX_POINTS - current_points
         # If subtracting points, points_to_add remains as user.points (allow negative to decrease points)
 
