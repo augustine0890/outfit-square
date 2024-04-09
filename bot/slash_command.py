@@ -3,7 +3,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from database.model import LottoGuess, User
+from database.model import LottoGuess, User, Activity, ActivityType
 from util.config import Config
 from util.helper import get_week_number, calculate_lotto_points
 
@@ -180,13 +180,14 @@ class SlashCommands(commands.Cog):
             logging.error(f"Error subtracting the Lotto fee: {e}")
 
     @commands.slash_command(
+        guild_ids=[Config.GUILD_ID],
         name="revocation",
         description="Revoke previously awarded points from a user.",
     )
     async def revocation(
         self,
         ctx: discord.ApplicationContext,
-        user_id: discord.Option(int, "Enter the user ID"),
+        user_id: discord.Option(str, "Enter the user ID"),
         points: discord.Option(
             int, "Specify the number of points to revoke", min_value=20, max_value=30
         ),
@@ -201,15 +202,32 @@ class SlashCommands(commands.Cog):
             and ctx.author.id in admin_id_list
         ):
             try:
+                user_fetched = await self.bot.fetch_user(int(user_id))
+                if not user_fetched:
+                    await ctx.respond("User not found.", ephemeral=True)
+                    return
+
+                # Prepare and add the revoke activity
+                activity_data = {
+                    "dcId": user_fetched.id,
+                    "dcUsername": user_fetched.display_name,
+                    "activity": ActivityType.REVOKE,
+                    "reward": -points,
+                }
+                activity = Activity(**activity_data)
+                # Assuming this method correctly adds the activity
+                self.db_client.add_activity(activity)
+
                 # Subtract points from the specified user
                 user_data = {
-                    "id": user_id,
+                    "id": user_fetched.id,
                     "points": -points,
                 }
                 user = User(**user_data)
                 self.db_client.add_or_update_user_points(user)
+
                 await ctx.respond(
-                    f"Successfully revoked {points} points from user ID {user_id}.",
+                    f"Successfully revoked {points} points from User {user_fetched.display_name} (ID: {user_fetched.id}).",
                     ephemeral=True,
                 )
             except Exception as e:
@@ -221,9 +239,11 @@ class SlashCommands(commands.Cog):
                 ephemeral=True,
             )
             # Notify an admin via DM about the unauthorized attempt
-            admin = await self.fetch_user(
+            admin = await self.bot.fetch_user(
                 list(admin_id_list)[1]
             )  # Fetches the first admin in the list for simplicity
+            if not admin:
+                return
             await admin.send(
                 f"🚨 Unauthorized command usage alert: User {ctx.author.display_name} (ID: {ctx.author.id}) attempted "
                 f"to use the `revocation` command."
