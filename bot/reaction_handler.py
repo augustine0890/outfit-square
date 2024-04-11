@@ -105,7 +105,7 @@ async def handle_reaction(
             user_model = User(**user_data)
             # Update the user model with new points.
             db_client.add_or_update_user_points(user_model)
-            content = f"<@{user.id}> got 3 points from reacting {emoji} on (https://discord.com/channels/{Config.GUILD_ID}/{message.channel.id}/{message.id}) in the <#{message.channel.id}> channel."
+            content = f"Yo, <@{user.id}> just scored 3 points for reacting {emoji} on (https://discord.com/channels/{Config.GUILD_ID}/{message.channel.id}/{message.id}) in the <#{message.channel.id}> channel. Keep it up! 🚀"
             await channel.send(content)
     except Exception as e:
         logging.error(f"Error adding user's activity: {e}")
