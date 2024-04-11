@@ -1,8 +1,8 @@
-from pymongo import MongoClient
+from pymongo import MongoClient, results, errors
 import logging
 from .model import User, Activity, ActivityType, LottoGuess, LottoDraw, UpdateUserPoints
 from util.helper import get_week_number, lotto_drawing
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 from util.config import Config
 
@@ -218,3 +218,20 @@ class MongoDBInterface:
             return True, top_users
         except Exception as e:
             return False, str(e)
+
+    def clean_up_activity_collection(
+        self, duration_in_days: int
+    ) -> results.DeleteResult:
+        """Cleans up the activity collection.
+        Removes documents that have a 'createdAt' timestamp older than the specified duration (in days).
+        If an error occurs, None is returned."""
+
+        cutoff_date = datetime.now() - timedelta(days=duration_in_days)
+        try:
+            result = self.activity_collection.delete_many(
+                {"createdAt": {"$lt": cutoff_date}}
+            )
+            return result
+        except errors.PyMongoError as e:
+            logging.error(f"An error occurred while trying to delete documents: {e}")
+            return None
