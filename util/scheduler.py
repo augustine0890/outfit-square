@@ -59,6 +59,15 @@ class TaskScheduler:
                 "trigger": CronTrigger(day_of_week="mon", hour="0", minute="0"),
                 "name": "Lotto Draw Generation",
             },
+            {
+                # Cleans up an activity collection (Every month on the first day)
+                "func": self.task_wrapper,
+                "args": [
+                    lambda: self.db.clean_up_activity_collection(duration_in_days=30)
+                ],
+                "trigger": CronTrigger(day=1, hour="0", minute="0"),
+                "name": "Cleans-up Activity Collection",
+            },
             # Add more jobs here with their respective details
         ]
 
