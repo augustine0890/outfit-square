@@ -1,9 +1,10 @@
-from pymongo import MongoClient, results, errors
+from pymongo import MongoClient, errors
+from pymongo.results import DeleteResult
 import logging
 from .model import User, Activity, ActivityType, LottoGuess, LottoDraw, UpdateUserPoints
 from util.helper import get_week_number, lotto_drawing
 from datetime import datetime, timezone, timedelta
-from typing import List, Optional
+from typing import List, Optional, Union
 from util.config import Config
 
 
@@ -220,8 +221,8 @@ class MongoDBInterface:
             return False, str(e)
 
     def clean_up_activity_collection(
-        self, duration_in_days: int
-    ) -> results.DeleteResult:
+        self, duration_in_days: int = 45
+    ) -> Union[DeleteResult, None]:
         """Cleans up the activity collection.
         Removes documents that have a 'createdAt' timestamp older than the specified duration (in days).
         If an error occurs, None is returned."""
