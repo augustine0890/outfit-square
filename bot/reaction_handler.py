@@ -137,7 +137,7 @@ async def handle_reaction(
             author_model = User(**author_data)
             db_client.add_or_update_user_points(author_model)
             content = (
-                f"<Heads up, @{author.id}> got a cool 10 points from <@{user.id}>'s {emoji} reaction on "
+                f"Heads up, <@{author.id}> got a cool 10 points from <@{user.id}>'s {emoji} reaction on "
                 f"(https://discord.com/channels/{Config.GUILD_ID}/{message.channel.id}/{message.id}"
                 f") in the <#{message.channel.id}> channel. 🎉👟"
             )
