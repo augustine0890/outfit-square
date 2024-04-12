@@ -1,6 +1,7 @@
 import logging
 
 import discord
+from discord import Intents
 from discord.ext import commands
 from database.mongo_client import MongoDBInterface
 from database.model import User, Activity, ActivityType, UpdateUserPoints
@@ -13,11 +14,18 @@ from util.config import Config
 
 class OutfitSquareBot(commands.Bot):
     def __init__(self, token, mongo_client: MongoDBInterface):
-        intents = discord.Intents.default()
-        intents.members = True
-        intents.message_content = (
-            True  # Ensure this intent is enabled in your bot's application page
+        intents_config = dict(
+            members=True,
+            message_content=True,
+            messages=True,
+            reactions=True,
+            guilds=True,
+            guild_messages=True,
         )
+        intents: Intents = Intents.default()
+        for intent, enabled in intents_config.items():
+            setattr(intents, intent, enabled)
+
         super().__init__(command_prefix="!", intents=intents)
         self.token = token
         self.mongo_client = mongo_client
