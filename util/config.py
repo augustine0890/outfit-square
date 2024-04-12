@@ -13,6 +13,7 @@ class Config:
         1207555439458525264,
         1202064555753353278,
         1227802095567114280,  # new-item
+        1207555490620383292,  # gift-codes
     ]  # ugc-sneak-peek, ugc-drops, rules-and-info
     ADMIN_IDS = [1221647973902192751, 1214388994121539624]
 
