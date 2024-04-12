@@ -143,7 +143,8 @@ class OutfitSquareBot(commands.Bot):
                 else:
                     # On successful points addition, congratulate the user
                     await ctx.reply(
-                        f"Congratulations <@{member.id}>! You've got 50 points for daily attendance 🎉 See you tomorrow!"
+                        f"Ayy, big ups <@{member.id}>! You just racked up 50 points for being here today! 🔥🎉 Hit it "
+                        f"up again tomorrow!"
                     )
                 # Display the updated points in an embed, regardless of whether new points were added or max was reached
                 points_embed = await embed_points_message(
