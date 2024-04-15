@@ -46,6 +46,7 @@ class OutfitSquareBot(commands.Bot):
     async def on_reaction_add(self, reaction, user):
         await handle_reaction(self, self.mongo_client, reaction, user)
 
+    @commands.Cog.listener()
     async def on_message(self, message):
         await reward_user_contribution(self, self.mongo_client, message)
 
