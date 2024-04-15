@@ -26,8 +26,20 @@ async def reward_user_contribution(
     # Fetch the designated channel for posting messages about contributions.
     bot_channel = bot.get_channel(Config.ATTENDANCE_CHANNEL_ID)
 
+    # Function to determine if the message is from a relevant channel or thread
+    def is_relevant_channel(msg):
+        if msg.channel.id in channels:
+            return msg.channel.id
+        if (
+            isinstance(msg.channel, discord.Thread)
+            and msg.channel.parent_id in channels
+        ):
+            return msg.channel.parent_id
+        return None
+
+    relevant_channel_id = is_relevant_channel(message)
     # Skip if a message is from bot or not in designated channels
-    if message.author == bot.user or message.channel.id not in channels:
+    if message.author == bot.user or not relevant_channel_id:
         return
 
     # Determine if the message contains an image
@@ -38,22 +50,24 @@ async def reward_user_contribution(
 
     # Conditions to check for rewarding the activity
     should_reward = False
-    reward = channels[message.channel.id]["reward"]
-    min_length = channels[message.channel.id]["min_length"]
+    reward = channels[relevant_channel_id]["reward"]
+    min_length = channels[relevant_channel_id]["min_length"]
     # Split the message content into words and count them
-    num_words = message.content.split()
-    if message.channel.id == OOTD_CHANNEL_ID and msg_contains_image:
+    num_words = len(message.content.split())
+    if relevant_channel_id == OOTD_CHANNEL_ID and msg_contains_image:
         should_reward = True
-    elif message.channel.id == STORE_ADVERTISING_CHANNEL_ID and (
-        msg_contains_image or len(num_words) > min_length
+    elif relevant_channel_id == STORE_ADVERTISING_CHANNEL_ID and (
+        msg_contains_image or num_words > min_length
     ):
         should_reward = True
-    elif message.channel.id == UGC_IDEA_CHANNEL_ID and msg_contains_image:
+    elif relevant_channel_id == UGC_IDEA_CHANNEL_ID and msg_contains_image:
         should_reward = True
 
     # Process activity if conditions met
     if should_reward:
-        await process_contribution_activity(message, reward, db_client, bot_channel)
+        await process_contribution_activity(
+            message, reward, db_client, bot_channel, bot
+        )
 
 
 async def process_contribution_activity(
@@ -61,15 +75,22 @@ async def process_contribution_activity(
     reward: int,
     db_client: MongoDBInterface,
     bot_channel: discord.channel,
+    bot: commands.Bot,
 ):
     author = message.author
+    # Determine channel name
+    channel_name = (
+        bot.get_channel(message.channel.parent_id).name
+        if isinstance(message.channel, discord.Thread)
+        else message.channel.name
+    )
     try:
         # Create and add activity to a database
         activity_data = {
             "dcUsername": author.name,
             "dcId": author.id,
             "messageId": message.id,
-            "channel": message.channel.name,
+            "channel": channel_name,
             "activity": ActivityType.SHARING,
             "reward": reward,
         }
@@ -85,12 +106,21 @@ async def process_contribution_activity(
             author_model = User(**author_data)
             db_client.add_or_update_user_points(author_model)
 
-            # Notify in a bot channel about the reward
-            content = (
-                f"Hey, check it out! 🎉<@{author.id}> just bagged {reward} points for sharing cool stuff on ("
-                f"https://discord.com/channels/{Config.GUILD_ID}/{message.channel.id}/{message.id}"
-                f") in the <#{message.channel.id}> channel. Way to go! 🚀👏"
+            # Prepare message link and content
+            channel_id = (
+                message.channel.parent_id
+                if isinstance(message.channel, discord.Thread)
+                else message.channel.id
             )
+            channel_mention = f"<#{channel_id}>"
+            message_link = f"https://discord.com/channels/{Config.GUILD_ID}/{channel_id}/{message.id}"
+            content = (
+                f"Hey, check it out! 🎉<@{author.id}> just bagged {reward} points for sharing cool stuff on "
+                f"[this message]({message_link}) in the {channel_mention} channel. Way to go! 🚀👏"
+            )
+
+            # Notify in a bot channel about the reward
             await bot_channel.send(content)
+
     except Exception as e:
         logging.error(f"Error processing activity: {e}")
