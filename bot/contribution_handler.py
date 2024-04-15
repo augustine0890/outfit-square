@@ -116,7 +116,7 @@ async def process_contribution_activity(
             message_link = f"https://discord.com/channels/{Config.GUILD_ID}/{channel_id}/{message.id}"
             content = (
                 f"Hey, check it out! 🎉<@{author.id}> just bagged {reward} points for sharing cool stuff on "
-                f"[this message]({message_link}) in the {channel_mention} channel. Way to go! 🚀👏"
+                f"({message_link}) in the {channel_mention} channel. Way to go! 🚀👏"
             )
 
             # Notify in a bot channel about the reward
