@@ -42,9 +42,9 @@ async def reward_user_contribution(
     if message.author == bot.user or not relevant_channel_id:
         return
 
-    # Determine if the message contains an image
+    # Determine if the message contains an image, video
     msg_contains_image = any(
-        attachment.content_type.startswith("image/")
+        attachment.content_type.startswith(("image/", "video/"))
         for attachment in message.attachments
     )
 
